@@ -1,0 +1,28 @@
+# Copy this file to terraform.tfvars and fill in your values
+
+# Project Configuration
+project_id       = "your-gcp-project-id"
+region          = "europe-west2"
+zone            = "europe-west2-b"
+credentials_file = "path/to/your/service-account-key.json"
+
+# VM Configuration
+vm_name      = "cgan-training-vm"
+machine_type = "g2-standard-8"  # GPU machine type
+environment  = "training"
+
+# Storage Configuration
+persistent_disk_name = "cgan-python-env-disk"
+persistent_disk_size = 50   # GB - for Python environment (persistent)
+temp_disk_name      = "cgan-training-data-disk"
+temp_disk_size      = 500   # GB - for training data (temporary)
+
+# GCS Configuration
+training_bucket_name = "your-training-data-bucket"
+
+# Labels for resource management
+labels = {
+  purpose    = "cgan-training"
+  managed-by = "terraform"
+  project    = "machine-learning"
+}
