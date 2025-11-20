@@ -31,7 +31,7 @@ variable "vm_name" {
 variable "machine_type" {
   description = "Machine type for the GPU VM"
   type        = string
-  default     = "g2-standard-8"
+  default     = "g2-standard-4"
 }
 
 variable "boot_image" {
