@@ -1,11 +1,11 @@
 import gc
 import numpy as np
 import tensorflow as tf
-import keras
-from tensorflow.keras import Input
-from tensorflow.keras import Model
-from tensorflow.keras.optimizers.legacy import Adam 
-from tensorflow.python.keras.utils import generic_utils
+from tensorflow import keras
+from keras import Input
+from keras import Model
+from keras.optimizers import Adam
+from keras.utils import generic_utils
 #from tensorflow.python.framework.ops import disable_eager_execution
 
 #disable_eager_execution()

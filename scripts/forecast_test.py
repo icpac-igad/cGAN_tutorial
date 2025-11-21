@@ -11,7 +11,8 @@ from setupmodel import setup_model
 
 import yaml
 import read_config
-from tensorflow.keras.utils import Progbar
+from tensorflow import keras
+from keras.utils import Progbar
 from data import (
     HOURS,
     all_fcst_fields,

@@ -15,7 +15,8 @@ import netCDF4 as nc
 from cftime import date2num
 import xarray as xr
 import numpy as np
-from tensorflow.keras.utils import Progbar
+from tensorflow import keras
+from keras.utils import Progbar
 
 sys.path.insert(1,"../")
 from data.data_gefs import (

@@ -1,5 +1,6 @@
 import tensorflow as tf
-from tensorflow.keras import backend as K
+from tensorflow import keras
+from keras import backend as K
 
 
 def wasserstein_loss(y_true, y_pred):

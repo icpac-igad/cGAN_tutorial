@@ -13,7 +13,8 @@ import yaml
 
 import netCDF4 as nc
 import numpy as np
-from tensorflow.keras.utils import Progbar
+from tensorflow import keras
+from keras.utils import Progbar
 
 import sys 
 sys.path.insert("../data/")

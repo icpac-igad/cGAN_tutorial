@@ -1,7 +1,8 @@
 import tensorflow as tf
-from tensorflow.keras import backend as K
-from tensorflow.keras.layers import Layer
-from tensorflow.python.keras.layers.merge import _Merge
+from tensorflow import keras
+from keras import backend as K
+from keras.layers import Layer
+from keras.layers import _Merge
 #from tensorflow.python.framework.ops import disable_eager_execution
 
 #disable_eager_execution()

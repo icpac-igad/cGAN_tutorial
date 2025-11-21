@@ -1,8 +1,10 @@
 import gc
 
-from tensorflow.keras import Input
-from tensorflow.keras import Model
-from tensorflow.python.keras.utils import generic_utils
+import tensorflow as tf
+from tensorflow import keras
+from keras import Input
+from keras import Model
+from keras.utils import generic_utils
 
 from .meta import ensure_list, input_shapes, load_opt_weights, save_opt_weights
 

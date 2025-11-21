@@ -1,8 +1,9 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import concatenate, Conv2D, Dense, GlobalAveragePooling2D, LeakyReLU, UpSampling2D
-from tensorflow.keras import Input
+from tensorflow import keras
+from keras.models import Model
+from keras.layers import concatenate, Conv2D, Dense, GlobalAveragePooling2D, LeakyReLU, UpSampling2D
+from keras import Input
 
 from .blocks import residual_block, const_upscale_block
 
@@ -83,10 +84,10 @@ def generator(
             name="encoder",
         )
         # decoder model and inputs
-        mean_input = tf.keras.layers.Input(
+        mean_input = Input(
             shape=(None, None, latent_variables), name="mean_input"
         )
-        logvar_input = tf.keras.layers.Input(
+        logvar_input = Input(
             shape=(None, None, latent_variables), name="logvar_input"
         )
         noise_input = Input(shape=(None, None, latent_variables), name="noise_input")

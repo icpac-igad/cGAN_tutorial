@@ -1,4 +1,6 @@
-from tensorflow.keras.layers import (
+import tensorflow as tf
+from tensorflow import keras
+from keras.layers import (
     Layer,
     Add,
     Conv2D,

@@ -1,7 +1,8 @@
 import gc
 
-from tensorflow.keras.optimizers.legacy import Adam
-#from tensorflow.keras.optimizers import Adam 
+import tensorflow as tf
+from tensorflow import keras
+from keras.optimizers import Adam 
 
 from model import Deterministic, WGANGP, VAE, generator, discriminator
 

@@ -6,7 +6,8 @@ import numpy as np
 import numpy.ma as ma
 from properscoring import crps_ensemble
 import tensorflow as tf
-from tensorflow.python.keras.utils import generic_utils
+from tensorflow import keras
+from keras.utils import generic_utils
 
 from .rapsd import rapsd
 

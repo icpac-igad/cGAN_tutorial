@@ -13,7 +13,8 @@ import yaml
 import netCDF4 as nc
 import xarray as xr
 import numpy as np
-from tensorflow.keras.utils import Progbar
+from tensorflow import keras
+from keras.utils import Progbar
 
 from data_old import (
     HOURS,

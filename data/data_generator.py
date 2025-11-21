@@ -1,7 +1,8 @@
 """ Data generator class for full-image evaluation of precipitation downscaling network """
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.utils import Sequence
+from tensorflow import keras
+from keras.utils import Sequence
 
 from .data import load_fcst_truth_batch, load_hires_constants, HOURS
 import sys
