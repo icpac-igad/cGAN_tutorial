@@ -1,0 +1,43 @@
+# Copy this file to terraform.tfvars and fill in your values
+# Command: cp terraform.tfvars.example terraform.tfvars
+
+# Project Configuration
+project_id       = "your-gcp-project-id"
+region          = "europe-west2"
+zone            = "europe-west2-b"
+credentials_file = "path/to/your/service-account-key.json"
+
+# VM Configuration
+vm_name      = "tfrecords-vm"
+machine_type = "n2-standard-8"  # 8 vCPUs, 32 GB RAM - suitable for TFRecords processing
+environment  = "tfrecords-processing"
+preemptible  = false  # Set to true for ~60-80% cost savings (VM can be terminated)
+
+# Storage Configuration
+persistent_disk_name = "tfrecords-python-env-disk"
+persistent_disk_size = 50   # GB - for Python environment (persistent across sessions)
+temp_disk_name      = "tfrecords-data-disk"
+temp_disk_size      = 500   # GB - for downloaded data and TFRecords (deleted after processing)
+disk_type           = "pd-ssd"  # Use pd-ssd for better I/O performance
+
+# GCS Configuration
+training_bucket_name    = "your-training-data-bucket-name"  # Must be globally unique
+create_gcs_bucket       = false  # Set to true if you want Terraform to create the bucket
+gcs_bucket_location     = "EU"   # Location for bucket (EU, US, ASIA, etc.)
+gcs_bucket_lifecycle_days = 0    # 0 = no auto-delete, set to N to delete files after N days
+
+# Labels for resource management
+labels = {
+  purpose    = "tfrecords-creation"
+  managed-by = "terraform"
+  project    = "cgan-training"
+  cost-center = "ml-infrastructure"
+}
+
+# Machine Type Options:
+# - n2-standard-4:  4 vCPUs, 16 GB RAM (~$0.20/hour)
+# - n2-standard-8:  8 vCPUs, 32 GB RAM (~$0.40/hour) [RECOMMENDED]
+# - n2-standard-16: 16 vCPUs, 64 GB RAM (~$0.80/hour)
+# - n2-highmem-8:   8 vCPUs, 64 GB RAM (~$0.55/hour)
+#
+# For preemptible instances, costs are ~60-80% lower but VM can be terminated
