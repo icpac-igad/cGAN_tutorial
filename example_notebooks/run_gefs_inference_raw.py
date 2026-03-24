@@ -1,4 +1,32 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = "==3.11.*"
+# dependencies = [
+#     "tensorflow==2.15",
+#     "numpy<2.0",
+#     "numba",
+#     "matplotlib",
+#     "seaborn",
+#     "cartopy",
+#     "jupyter",
+#     "xarray",
+#     "netcdf4",
+#     "scikit-learn",
+#     "cfgrib",
+#     "dask",
+#     "tqdm",
+#     "properscoring",
+#     "climlab",
+#     "scitools-iris",
+#     "ecmwf-api-client",
+#     "xesmf",
+#     "flake8",
+#     "regionmask",
+#     "schedule",
+#     "pyyaml",
+#     "cftime",
+# ]
+# ///
 """
 cGAN GEFS Inference Script - Raw NetCDF Method
 ===============================================
@@ -12,7 +40,7 @@ Input format:
 
 Usage:
 ------
-    micromamba run -n tf215gpu python run_gefs_inference_raw.py
+    uv run run_gefs_inference_raw.py
 """
 
 import sys
@@ -44,15 +72,16 @@ CONFIG = {
     # Model files from cgan_compact_20260202.zip
     "model_folder": _os.path.join(_SCRIPT_DIR, "cgan_compact_20260202/logfile_gefs_v3/"),
     "checkpoint": 345600,
-    # Raw NetCDF from GIK pipeline (stream_gefs_for_cgan.py + zarr_to_raw_netcdf.py)
-    "input_folder": _os.path.join(_SCRIPT_DIR, "gik_cgan_pipeline_output/netcdf/"),
+    # Raw NetCDF from GIK pipeline (cumulative APCP)
+    "input_folder": _os.path.join(_SCRIPT_DIR, "gik_cgan_output/netcdf/"),
     "constants_path": _os.path.join(_SCRIPT_DIR, "cgan_compact_20260202/CONSTANTS/"),
     # Output folder
-    "output_folder": _os.path.join(_SCRIPT_DIR, "cgan_output/"),
-    "dates": ["2025-09-18"],
+    "output_folder": _os.path.join(_SCRIPT_DIR, "gik_cgan_output/cgan_output/"),
+    "dates": ["2024-05-20"],
+    "run": "00",
     "start_hour": 30,
     "end_hour": 54,
-    "ensemble_members": 50,
+    "ensemble_members": 25,
     "normalization_mode": "gefs",
     "gefs_norm_file": _os.path.join(_SCRIPT_DIR, "cgan_compact_20260202/CONSTANTS/FCSTNorm_GEFS_2018.pkl"),
 }
@@ -60,7 +89,7 @@ CONFIG = {
 # Field definitions
 HOURS = 6
 all_fcst_fields = ["cape", "pres", "pwat", "tmp", "ugrd", "vgrd", "msl", "apcp"]
-nonnegative_fields = ["cape", "pwat", "apcp"]
+nonnegative_fields = ["cape", "msl", "pres", "pwat", "tmp"]
 
 # ICPAC region coordinates
 latitude = np.arange(-13.65, 24.7, 0.1)
@@ -326,6 +355,7 @@ def load_hires_constants(constants_path, batch_size=1):
     lsm_var = list(lsm.data_vars)[0]
 
     elev_data = elev[elev_var].values
+    elev_data = elev_data / 10000.0  # Normalise elevation (metres) to O(1)
     lsm_data = lsm[lsm_var].values
 
     constants = np.stack([elev_data, lsm_data], axis=-1)
@@ -336,10 +366,8 @@ def load_hires_constants(constants_path, batch_size=1):
 
 
 def denormalise(data):
-    """Convert from log-space to mm/h with capping to avoid overflow."""
-    data_capped = np.minimum(data, 10.0)
-    result = np.power(10.0, data_capped) - 1.0
-    return np.minimum(np.maximum(result, 0.0), 100.0)
+    """Convert from log-space to mm/h, capped at 100 mm/h."""
+    return np.minimum(np.power(10.0, data) - 1.0, 100.0)
 
 
 class NoiseGenerator:
@@ -499,7 +527,17 @@ def run_inference():
         print(f"\nProcessing: {d.year}-{d.month:02d}-{d.day:02d}")
 
         # Input/output paths
+        run_id = CONFIG.get("run", "00")
+        date_tag = f"{d.year}{d.month:02d}{d.day:02d}"
+        # New layout: {input_folder}/{YYYYMMDD}_{RUN}z/
+        input_folder_daterun = os.path.join(input_folder, f"{date_tag}_{run_id}z")
+        # Fallback: legacy layout {input_folder}/{year}/
         input_folder_year = os.path.join(input_folder, str(d.year))
+        # Pick whichever exists (prefer date-specific)
+        if os.path.isdir(input_folder_daterun):
+            input_folder_active = input_folder_daterun
+        else:
+            input_folder_active = input_folder_year
         output_folder_year = os.path.join(output_folder, str(d.year))
         pathlib.Path(output_folder_year).mkdir(parents=True, exist_ok=True)
 
@@ -526,27 +564,43 @@ def run_inference():
 
             # Load and normalize each field
             for field in all_fcst_fields:
-                input_file = f"{field}_{d.year}.nc"
-                nc_in_path = os.path.join(input_folder_year, input_file)
+                # New naming: {field}_{YYYYMMDD}_{RUN}z.nc
+                new_name = f"{field}_{date_tag}_{run_id}z.nc"
+                new_path = os.path.join(input_folder_active, new_name)
+                # Legacy naming: {field}_{year}.nc
+                legacy_path = os.path.join(input_folder_active, f"{field}_{d.year}.nc")
+                nc_in_path = new_path if os.path.exists(new_path) else legacy_path
 
                 nc_file = xr.open_dataset(nc_in_path)
                 nc_file = nc_file.sel({"time": day})
 
-                # Get step indices (hours 1-80, need indices for hour pairs)
-                # For forecast hour 30, need steps at hour 24 and 30
-                # in_time_idx = 5 (30//6) -> need steps 4 and 5 (indices 23 and 29)
-                # But our steps start at 1, so:
-                # For hours 30-36: steps at indices 29 and 35 (hour 30 and 36)
-                hour_idx_1 = valid_times[out_time_idx] - 1  # hour index (0-based from hour 1)
-                hour_idx_2 = valid_times[out_time_idx] + HOURS - 1
+                # Select two forecast hours matching training code:
+                #   step_1 = valid_time
+                #   step_2 = valid_time + HOURS
+                # (data_gefs.py: sel(step=[timedelta(time_idx), timedelta(time_idx+HOURS)]))
+                hour_1 = int(valid_times[out_time_idx])
+                hour_2 = int(valid_times[out_time_idx]) + HOURS
 
-                # Select two consecutive timesteps for this valid time
-                nc_file = nc_file.isel({"step": [hour_idx_1, hour_idx_2]})
+                step_vals = nc_file.step.values
+                if np.issubdtype(step_vals.dtype, np.integer):
+                    nc_file = nc_file.sel({"step": [hour_1, hour_2]})
+                else:
+                    nc_file = nc_file.sel(
+                        {"step": [np.timedelta64(hour_1, 'h'),
+                                  np.timedelta64(hour_2, 'h')]}
+                    )
 
                 short_name = [var for var in nc_file.data_vars][0]
 
                 # Shape: (member, step, lat, lon)
                 data = nc_file[short_name].values  # (member, step, lat, lon)
+
+                # Flip latitude to ascending (S→N) to match constants
+                # (training zarr + constants both use ascending latitudes;
+                # GEFS source data uses descending N→S ordering)
+                lat_vals = nc_file.latitude.values
+                if lat_vals[0] > lat_vals[-1]:
+                    data = data[:, :, ::-1, :]
                 n_members = data.shape[0]
                 n_steps = data.shape[1]
 

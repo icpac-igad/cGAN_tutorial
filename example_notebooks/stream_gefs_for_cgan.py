@@ -231,7 +231,8 @@ def stream_variable_for_member(
     var_config: Dict,
     zarr_store: zarr.Group,
     member_idx: int,
-    fs
+    fs,
+    step_filter: Optional[set] = None
 ) -> bool:
     """
     Stream a single variable for a single ensemble member.
@@ -243,6 +244,7 @@ def stream_variable_for_member(
         zarr_store: Zarr group to write data to
         member_idx: Index of this member in the zarr array
         fs: S3 filesystem instance
+        step_filter: Optional set of step indices to stream (None = all)
 
     Returns:
         True if successful, False otherwise
@@ -266,6 +268,10 @@ def stream_variable_for_member(
         if not chunks:
             print(f"      No chunks found for {var_name} (prefix: {path_prefix})")
             return False
+
+        # Filter to only needed step indices
+        if step_filter is not None:
+            chunks = [(si, ck) for si, ck in chunks if si in step_filter]
 
         n_timesteps = len(chunks)
 
@@ -294,10 +300,19 @@ def stream_variable_for_member(
 def stream_all_variables_for_member(
     parquet_path: str,
     zarr_store: zarr.Group,
-    member_idx: int
+    member_idx: int,
+    step_filter: Optional[set] = None,
+    step_filter_overrides: Optional[Dict[str, set]] = None,
 ) -> Dict[str, bool]:
     """
     Stream all cGAN variables for a single ensemble member.
+
+    Args:
+        step_filter: Optional set of step indices to stream (None = all)
+        step_filter_overrides: Optional dict mapping variable names to
+            per-variable step filters (e.g. {'apcp': {0,1,2,...,18}}
+            for cumulative precipitation).  Overrides step_filter for
+            the specified variables.
 
     Returns dict of variable -> success status
     """
@@ -310,9 +325,11 @@ def stream_all_variables_for_member(
     start_time = time.time()
 
     for var_name, var_config in CGAN_VARIABLES.items():
+        var_step_filter = (step_filter_overrides or {}).get(var_name, step_filter)
         print(f"    {var_name}...", end=' ', flush=True)
         success = stream_variable_for_member(
-            parquet_path, var_name, var_config, zarr_store, member_idx, fs
+            parquet_path, var_name, var_config, zarr_store, member_idx, fs,
+            step_filter=var_step_filter
         )
         results[var_name] = success
         status = "OK" if success else "FAILED"
@@ -333,16 +350,25 @@ def stream_all_variables_for_member(
 def create_cgan_zarr_store(
     output_dir: Path,
     n_members: int,
-    n_timesteps: int
+    n_timesteps: int,
+    n_timesteps_overrides: Optional[Dict[str, int]] = None,
 ) -> Tuple[zarr.Group, Path]:
     """
     Create zarr store for cGAN input data with all required variables.
+
+    Args:
+        n_timesteps_overrides: Optional dict mapping variable names to
+            different step counts (e.g. {'apcp': 19} when downloading
+            all steps for cumulative precipitation calculation).
     """
     n_lats = len(REGION_LATS)
     n_lons = len(REGION_LONS)
 
     print(f"\n  Creating zarr store: {output_dir}")
     print(f"  Shape: ({n_members} members, {n_timesteps} steps, {n_lats} lat, {n_lons} lon)")
+    if n_timesteps_overrides:
+        for var, nts in n_timesteps_overrides.items():
+            print(f"    Override: {var} → {nts} steps")
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -350,10 +376,11 @@ def create_cgan_zarr_store(
 
     # Create array for each cGAN variable
     for var_name in CGAN_VARIABLES.keys():
+        var_steps = (n_timesteps_overrides or {}).get(var_name, n_timesteps)
         store.create_dataset(
             var_name,
-            shape=(n_members, n_timesteps, n_lats, n_lons),
-            chunks=(1, n_timesteps, n_lats, n_lons),
+            shape=(n_members, var_steps, n_lats, n_lons),
+            chunks=(1, var_steps, n_lats, n_lons),
             dtype=np.float32,
             fill_value=np.nan,
             compressors=[BloscCodec(cname='lz4', clevel=3)]
