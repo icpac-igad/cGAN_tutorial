@@ -29,6 +29,7 @@
 #     "pyyaml",
 #     "cftime",
 #     "pyarrow",
+#     "icechunk>=2.1",
 # ]
 # ///
 """
@@ -766,6 +767,20 @@ Examples:
                        help='Pre-existing NetCDF directory (for stage 5 only)')
     parser.add_argument('--cgan_steps_only', action='store_true',
                        help='Only stream the timesteps needed for cGAN inference (5 of 81, ~93%% faster)')
+    parser.add_argument('--source', choices=['gik', 'icechunk'], default='gik',
+                       help="Where the forecast fields come from. 'gik' runs "
+                            "stages 1-4 (template -> parquet -> stream -> NetCDF). "
+                            "'icechunk' reads the published GEFS Icechunk store "
+                            "instead, which already holds those references, and "
+                            "replaces stages 1-4 with a single read.")
+    parser.add_argument('--icechunk_store', choices=['source-coop', 'gcs'],
+                       default='source-coop',
+                       help='Icechunk backend for --source icechunk. source-coop '
+                            'is public and needs no credentials; gcs is faster.')
+    parser.add_argument('--sa_key', type=str, default=None,
+                       help='GCS service-account key for --icechunk_store gcs')
+    parser.add_argument('--icechunk_threads', type=int, default=32,
+                       help='Concurrent chunk reads for --source icechunk')
     parser.add_argument('--cumulative_apcp', action='store_true',
                        help='Convert bucket-incremental APCP to total accumulated from hour 0. '
                             'Downloads all APCP steps (0 to end_hour) and computes cumulative sum '
@@ -826,6 +841,37 @@ Examples:
     zarr_dir = output_base / f"zarr_{target_date}_{target_run}z"
     netcdf_dir = Path(args.netcdf_dir) if args.netcdf_dir else output_base / "netcdf" / f"{target_date}_{target_run}z"
     cgan_output = output_base / "cgan_output"
+
+    # STAGES 1-4 via the Icechunk store, in one read.
+    #
+    # The store is already the product of stages 1-3: a virtual Zarr over the
+    # same s3://noaa-gefs-pds bytes with every (date, member, step, variable)
+    # referenced. So the template download, the parquet build and the per-member
+    # stream are not work that needs doing again -- they are work that was done
+    # once and persisted. Stage 5 is untouched: the NetCDF written here is the
+    # same {field}_{date}_{run}z.nc layout run_gefs_inference_raw.py reads.
+    if args.source == 'icechunk':
+        skipped = [n for n in (1, 2, 3, 4) if n in stages]
+        if skipped:
+            print("\n" + "="*70)
+            print(f"STAGES {','.join(map(str, skipped))} -> Icechunk store "
+                  f"({args.icechunk_store})")
+            print("="*70)
+            sys.path.insert(0, str(Path(__file__).resolve().parent))
+            from gefs_icechunk_to_cgan import FIELD_ORDER, extract_field
+
+            t_ic = time.time()
+            for field in FIELD_ORDER:
+                r = extract_field(target_date, field, str(netcdf_dir),
+                                  run=target_run, members=args.max_members,
+                                  store_kind=args.icechunk_store,
+                                  sa_key=args.sa_key,
+                                  threads=args.icechunk_threads)
+                print(f"  {r['field']:<5} {tuple(r['shape'])} "
+                      f"finite {r['finite']:5.1f}%  mean {r['mean']:>12.3f}")
+            print(f"  {len(FIELD_ORDER)} NetCDF files in {time.time()-t_ic:.0f}s "
+                  f"-> {netcdf_dir}")
+        stages = [n for n in stages if n not in (1, 2, 3, 4)]
 
     # STAGE 1: Download template
     if 1 in stages:

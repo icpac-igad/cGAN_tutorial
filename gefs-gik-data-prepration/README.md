@@ -55,6 +55,55 @@ The unified script `run_gefs_gik_cgan_pipeline.py` runs 5 stages sequentially:
 | 4 | Convert Zarr to per-field NetCDF | `gik_cgan_output/netcdf/YYYY/` |
 | 5 | Run cGAN inference | `gik_cgan_output/cgan_output/YYYY/GAN_YYYYMMDD.nc` |
 
+### Skipping stages 1-4: read the Icechunk store instead
+
+```bash
+# public store, no credentials at all
+uv run run_gefs_gik_cgan_pipeline.py --date 20250918 --source icechunk
+
+# the GCS copy (faster; needs a read key)
+uv run run_gefs_gik_cgan_pipeline.py --date 20250918 --source icechunk \
+    --icechunk_store gcs --sa_key /path/sa.json
+
+# or standalone, without the pipeline wrapper (also does many inits)
+uv run gefs_icechunk_to_cgan.py --date  20250918 --outdir netcdf/2025
+uv run gefs_icechunk_to_cgan.py --dates 20250915:20250918 --executor frisky
+```
+
+Stages 1-3 build the GIK references for a date and stream the fields out of
+S3. The **GEFS Icechunk store already contains that result** -- a virtual Zarr
+over the same `s3://noaa-gefs-pds` bytes, with every (date, member, step,
+variable) referenced, for 2020-09-23 onward. So `--source icechunk` replaces
+stages 1-4 with one read and hands stage 5 the identical
+`{field}_{YYYYMMDD}_{RUN}z.nc` files. Stage 5 is unchanged.
+
+| | stages 1-4 | `--source icechunk` |
+|---|---|---|
+| 1 init, 30 members | ~2 h (README estimate) | **~30-70 s measured** |
+| HuggingFace template | downloaded | not needed |
+| parquet references | built per date | already in the store |
+| credentials | none | none (`source-coop`) |
+
+Only 1,200 chunks are needed per init (30 members x 5 steps x 8 fields), not
+every step of every member -- that is where the time goes.
+
+Verified against the source GRIB rather than against the store: 48 spot checks
+over two dates, decoding the GRIB message straight from `noaa-gefs-pds` and
+comparing, `max|delta| = 0` on every one.
+
+**Limits.** The store is a single `0p25/00z` group, so this path is **00z only**
+-- other runs still need stages 1-4. `--cumulative_apcp` is not implemented here
+on purpose: the selected steps (30/36/42/48/54 h) are the 6-hourly bucket
+boundaries, so the stored value is already the full window, and the model was
+trained per-bucket (see `APCP_BUCKET_VS_CUMULATIVE.md`).
+
+**Executors** (standalone script). `--executor threads` is one process with a
+thread pool; `--executor frisky` spreads (date, field) tasks over a Frisky
+cluster. On a single 8-core host the two measured the same (99 s for 2 inits,
+byte-for-byte identical output) -- distributing does not help when one machine's
+network and CPU are the bottleneck. Frisky is for a real multi-VM cluster; point
+it at one with `--scheduler <addr>`.
+
 ### Running specific stages
 
 ```bash
