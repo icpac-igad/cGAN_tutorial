@@ -57,18 +57,42 @@ The unified script `run_gefs_gik_cgan_pipeline.py` runs 5 stages sequentially:
 
 ### Skipping stages 1-4: read the Icechunk store instead
 
+**Run it as two commands, not one** -- see "One environment cannot do both"
+below.
+
 ```bash
-# public store, no credentials at all
-uv run run_gefs_gik_cgan_pipeline.py --date 20250918 --source icechunk
-
-# the GCS copy (faster; needs a read key)
-uv run run_gefs_gik_cgan_pipeline.py --date 20250918 --source icechunk \
-    --icechunk_store gcs --sa_key /path/sa.json
-
-# or standalone, without the pipeline wrapper (also does many inits)
-uv run gefs_icechunk_to_cgan.py --date  20250918 --outdir netcdf/2025
+# 1. fields out of the store (Python 3.12: icechunk + gribberish)
+#    public store, no credentials at all:
+uv run gefs_icechunk_to_cgan.py --date 20250918 --outdir out/netcdf/20250918_00z
+#    the GCS copy (faster; needs a read key):
+uv run gefs_icechunk_to_cgan.py --date 20250918 --store gcs --sa-key key.json \
+    --outdir out/netcdf/20250918_00z
+#    many inits at once:
 uv run gefs_icechunk_to_cgan.py --dates 20250915:20250918 --executor frisky
+
+# 2. stage 5 on those files (Python 3.11: TensorFlow 2.15)
+uv run run_gefs_gik_cgan_pipeline.py --date 20250918 --stages 5 \
+    --netcdf_dir out/netcdf/20250918_00z
 ```
+
+`--source icechunk` also exists on the pipeline and does step 1 inline, for use
+with `--stages 1,2,3,4`; it cannot be combined with stage 5 in one `uv run`.
+
+#### One environment cannot do both
+
+`run_gefs_gik_cgan_pipeline.py` cannot be resolved by `uv run` at all today:
+
+```
+gribberish>=1.0.0 depends on Python>=3.12, gribberish<=0.30.3 depends on numpy>=2
+... and because you require numpy<2.0 and gribberish, your requirements are
+unsatisfiable
+```
+
+TensorFlow 2.15 pins Python 3.11 and `numpy<2.0`; gribberish needs 3.12 or
+numpy>=2. **This is pre-existing** -- the header fails identically before the
+Icechunk work was added, so the `uv run run_gefs_gik_cgan_pipeline.py` command
+in Quick Start above does not currently work for any stage combination. Stage 5
+alone resolves, because it never imports gribberish.
 
 Stages 1-3 build the GIK references for a date and stream the fields out of
 S3. The **GEFS Icechunk store already contains that result** -- a virtual Zarr
