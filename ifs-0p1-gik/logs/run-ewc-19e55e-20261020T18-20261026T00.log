@@ -1,0 +1,231 @@
+=== step3 workers
+     20s  ok=5/5  ['ok']
+venv ready on all workers
+starting frisky scheduler on 192.168.1.164
+scheduler  192.168.1.164:8798   dashboard http://192.168.1.164:8793
+starting frisky workers
+5 frisky workers (1/VM) dialling 192.168.1.164:8798 at 6 threads each (30 concurrent readers)
+=== 20261020T18z step4 realize -> ceph:cgan14-19e55e-25n15s/20261020T18z  2026-10-27T09:59:07Z
+NOTE     18z stops at 144 h: 25 of the 29 cGAN lead times
+virtual  sourcecoop:forecasts/ecmwf-ifs-0p1-icechunk-vd  snapshot V5JVX30NADD579N21JJG  (7.3s)
+box      lat 25.0..-15.0  lon 19.0..55.0  401 x 361 at 0.1 deg
+work     14 fields x 25 steps = 350 blocks x 51 members = 17,850 messages, prefix read
+sink     ceph:cgan14-19e55e-25n15s/20261020T18z  created  schema VGNN23W8JMKAYES48WA0
+cluster  EWC scheduler 192.168.1.164:8798, 4 GETs per block task, 40 blocks in flight
+     35/350 blocks      43s   41.3 msg/s
+     70/350 blocks      64s   56.1 msg/s
+    105/350 blocks      93s   57.6 msg/s
+    140/350 blocks     114s   62.4 msg/s
+    175/350 blocks     142s   62.7 msg/s
+    210/350 blocks     165s   64.9 msg/s
+    245/350 blocks     185s   67.5 msg/s
+    280/350 blocks     207s   69.1 msg/s
+    315/350 blocks     237s   67.9 msg/s
+    350/350 blocks     266s   67.0 msg/s
+committed R6QEZ0A1PW3EXK0MGX1G
+wall     266s  67.0 msg/s  (350 blocks)
+bytes    fetched 24.31 of 36.04 GB whole-message (saved 32.6%), 3 top-up GETs, mean GET 1.42s, decode 31 ms
+blocks   mean read 20.8s, mean write 1.01s
+=== 20261020T18z step5 check (Ceph)
+1 complete   yes -- 350/350 chunks written
+   12/12 bit-exact
+VERDICT  PASS
+=== 20261021T00z step4 realize -> ceph:cgan14-19e55e-25n15s/20261021T00z  2026-10-27T10:04:42Z
+virtual  sourcecoop:forecasts/ecmwf-ifs-0p1-icechunk-vd  snapshot DH6AJJSWJZ3VE2BCMERG  (6.9s)
+box      lat 25.0..-15.0  lon 19.0..55.0  401 x 361 at 0.1 deg
+work     14 fields x 29 steps = 406 blocks x 51 members = 20,706 messages, prefix read
+sink     ceph:cgan14-19e55e-25n15s/20261021T00z  created  schema AXNAP91PBRY5QQBH89W0
+cluster  EWC scheduler 192.168.1.164:8798, 4 GETs per block task, 40 blocks in flight
+     40/406 blocks      44s   46.4 msg/s
+     80/406 blocks      76s   53.6 msg/s
+    120/406 blocks     112s   54.6 msg/s
+    160/406 blocks     133s   61.5 msg/s
+    200/406 blocks     166s   61.4 msg/s
+    240/406 blocks     193s   63.5 msg/s
+    280/406 blocks     219s   65.3 msg/s
+    320/406 blocks     257s   63.6 msg/s
+    360/406 blocks     297s   61.8 msg/s
+    400/406 blocks     325s   62.7 msg/s
+committed KXEDEYV74PF2APW0QYJ0
+wall     330s  62.8 msg/s  (406 blocks)
+bytes    fetched 28.42 of 42.05 GB whole-message (saved 32.4%), 0 top-up GETs, mean GET 1.56s, decode 31 ms
+blocks   mean read 22.7s, mean write 1.02s
+=== 20261021T00z step5 check (Ceph)
+1 complete   yes -- 406/406 chunks written
+   12/12 bit-exact
+VERDICT  PASS
+=== 20261022T00z step4 realize -> ceph:cgan14-19e55e-25n15s/20261022T00z  2026-10-27T10:11:14Z
+virtual  sourcecoop:forecasts/ecmwf-ifs-0p1-icechunk-vd  snapshot DH6AJJSWJZ3VE2BCMERG  (8.5s)
+box      lat 25.0..-15.0  lon 19.0..55.0  401 x 361 at 0.1 deg
+work     14 fields x 29 steps = 406 blocks x 51 members = 20,706 messages, prefix read
+sink     ceph:cgan14-19e55e-25n15s/20261022T00z  created  schema 3FJ2BSF0YWSQKWWFY5R0
+cluster  EWC scheduler 192.168.1.164:8798, 4 GETs per block task, 40 blocks in flight
+     40/406 blocks      51s   40.1 msg/s
+     80/406 blocks      79s   51.9 msg/s
+    120/406 blocks     112s   54.4 msg/s
+    160/406 blocks     132s   61.7 msg/s
+    200/406 blocks     157s   64.9 msg/s
+    240/406 blocks     184s   66.6 msg/s
+    280/406 blocks     205s   69.6 msg/s
+    320/406 blocks     234s   69.8 msg/s
+    360/406 blocks     263s   69.7 msg/s
+    400/406 blocks     296s   68.8 msg/s
+committed ABCEBPZB7VY2756KZT3G
+wall     302s  68.5 msg/s  (406 blocks)
+bytes    fetched 28.44 of 42.02 GB whole-message (saved 32.3%), 0 top-up GETs, mean GET 1.39s, decode 31 ms
+blocks   mean read 20.6s, mean write 0.92s
+=== 20261022T00z step5 check (Ceph)
+1 complete   yes -- 406/406 chunks written
+   12/12 bit-exact
+VERDICT  PASS
+=== 20261023T00z step4 realize -> ceph:cgan14-19e55e-25n15s/20261023T00z  2026-10-27T10:17:41Z
+virtual  sourcecoop:forecasts/ecmwf-ifs-0p1-icechunk-vd  snapshot DH6AJJSWJZ3VE2BCMERG  (7.0s)
+box      lat 25.0..-15.0  lon 19.0..55.0  401 x 361 at 0.1 deg
+work     14 fields x 29 steps = 406 blocks x 51 members = 20,706 messages, prefix read
+sink     ceph:cgan14-19e55e-25n15s/20261023T00z  created  schema 5VZSW10AKF5W1XXWDCT0
+cluster  EWC scheduler 192.168.1.164:8798, 4 GETs per block task, 40 blocks in flight
+     40/406 blocks      53s   38.5 msg/s
+     80/406 blocks      83s   49.3 msg/s
+    120/406 blocks     116s   52.8 msg/s
+    160/406 blocks     142s   57.4 msg/s
+    200/406 blocks     176s   58.1 msg/s
+    240/406 blocks     202s   60.7 msg/s
+    280/406 blocks     226s   63.3 msg/s
+    320/406 blocks     254s   64.4 msg/s
+    360/406 blocks     295s   62.3 msg/s
+    400/406 blocks     324s   62.9 msg/s
+committed Y6PRHRS1TE0EYH67K640
+wall     328s  63.1 msg/s  (406 blocks)
+bytes    fetched 28.47 of 42.02 GB whole-message (saved 32.3%), 0 top-up GETs, mean GET 1.53s, decode 31 ms
+blocks   mean read 22.5s, mean write 1.02s
+=== 20261023T00z step5 check (Ceph)
+1 complete   yes -- 406/406 chunks written
+   12/12 bit-exact
+VERDICT  PASS
+=== 20261024T00z step4 realize -> ceph:cgan14-19e55e-25n15s/20261024T00z  2026-10-27T10:24:13Z
+virtual  sourcecoop:forecasts/ecmwf-ifs-0p1-icechunk-vd  snapshot DH6AJJSWJZ3VE2BCMERG  (7.6s)
+box      lat 25.0..-15.0  lon 19.0..55.0  401 x 361 at 0.1 deg
+work     14 fields x 29 steps = 406 blocks x 51 members = 20,706 messages, prefix read
+sink     ceph:cgan14-19e55e-25n15s/20261024T00z  created  schema PCJ503A2GA0E2FG13EM0
+cluster  EWC scheduler 192.168.1.164:8798, 4 GETs per block task, 40 blocks in flight
+     40/406 blocks      53s   38.8 msg/s
+     80/406 blocks      81s   50.4 msg/s
+    120/406 blocks     119s   51.6 msg/s
+    160/406 blocks     141s   58.0 msg/s
+    200/406 blocks     163s   62.5 msg/s
+    240/406 blocks     194s   63.1 msg/s
+    280/406 blocks     225s   63.4 msg/s
+    320/406 blocks     247s   66.1 msg/s
+    360/406 blocks     286s   64.3 msg/s
+    400/406 blocks     317s   64.4 msg/s
+committed QP43J2ZJEVR9Z3W7Q4R0
+wall     425s  48.8 msg/s  (406 blocks)
+bytes    fetched 28.27 of 41.67 GB whole-message (saved 32.2%), 0 top-up GETs, mean GET 1.49s, decode 31 ms
+blocks   mean read 22.3s, mean write 1.01s
+=== 20261024T00z step5 check (Ceph)
+1 complete   yes -- 406/406 chunks written
+   12/12 bit-exact
+VERDICT  PASS
+=== 20261025T00z step4 realize -> ceph:cgan14-19e55e-25n15s/20261025T00z  2026-10-27T10:32:27Z
+virtual  sourcecoop:forecasts/ecmwf-ifs-0p1-icechunk-vd  snapshot DH6AJJSWJZ3VE2BCMERG  (7.8s)
+box      lat 25.0..-15.0  lon 19.0..55.0  401 x 361 at 0.1 deg
+work     14 fields x 29 steps = 406 blocks x 51 members = 20,706 messages, prefix read
+sink     ceph:cgan14-19e55e-25n15s/20261025T00z  created  schema K7QV6K541XEAAF885QWG
+cluster  EWC scheduler 192.168.1.164:8798, 4 GETs per block task, 40 blocks in flight
+     40/406 blocks     104s   19.6 msg/s
+     80/406 blocks     197s   20.7 msg/s
+    120/406 blocks     341s   17.9 msg/s
+    160/406 blocks     507s   16.1 msg/s
+    200/406 blocks     636s   16.0 msg/s
+    240/406 blocks     791s   15.5 msg/s
+    280/406 blocks     901s   15.9 msg/s
+    320/406 blocks    1007s   16.2 msg/s
+    360/406 blocks    1059s   17.3 msg/s
+    400/406 blocks    1642s   12.4 msg/s
+committed 1H5WM7QERWFJWW2K1GWG
+wall     2363s  8.8 msg/s  (406 blocks)
+bytes    fetched 28.55 of 42.01 GB whole-message (saved 32.0%), 0 top-up GETs, mean GET 3.42s, decode 29 ms
+blocks   mean read 102.1s, mean write 0.86s
+=== 20261025T00z step5 check (Ceph)
+1 complete   yes -- 406/406 chunks written
+   12/12 bit-exact
+VERDICT  PASS
+=== 20261026T00z step4 realize -> ceph:cgan14-19e55e-25n15s/20261026T00z  2026-10-27T11:13:11Z
+virtual  sourcecoop:forecasts/ecmwf-ifs-0p1-icechunk-vd  snapshot DH6AJJSWJZ3VE2BCMERG  (9.0s)
+box      lat 25.0..-15.0  lon 19.0..55.0  401 x 361 at 0.1 deg
+work     14 fields x 29 steps = 406 blocks x 51 members = 20,706 messages, prefix read
+sink     ceph:cgan14-19e55e-25n15s/20261026T00z  created  schema Q7Z7BTVJTSFAKGRY37K0
+cluster  EWC scheduler 192.168.1.164:8798, 4 GETs per block task, 40 blocks in flight
+     40/406 blocks     155s   13.1 msg/s
+     80/406 blocks     338s   12.1 msg/s
+    120/406 blocks     582s   10.5 msg/s
+    160/406 blocks     641s   12.7 msg/s
+    200/406 blocks     695s   14.7 msg/s
+    240/406 blocks     781s   15.7 msg/s
+    280/406 blocks     943s   15.1 msg/s
+    320/406 blocks    1015s   16.1 msg/s
+    360/406 blocks    1135s   16.2 msg/s
+    400/406 blocks    1422s   14.3 msg/s
+committed 4C7DW1HFVN32YAY3KV00
+wall     1553s  13.3 msg/s  (406 blocks)
+bytes    fetched 28.79 of 42.21 GB whole-message (saved 31.8%), 0 top-up GETs, mean GET 3.68s, decode 29 ms
+blocks   mean read 96.0s, mean write 1.01s
+=== 20261026T00z step5 check (Ceph)
+1 complete   yes -- 406/406 chunks written
+   12/12 bit-exact
+VERDICT  PASS
+=== step3 stop workers
+5
+=== 20261020T18z publish -> source.coop forecasts/ecmwf-ifs-0p1-cgan14-19e55e-25n15s/20261020T18z
+
+uploaded 381/381 objects, 2.17 GB in 23s = 93.2 MB/s (335 GB/h), 0 errors
+uploaded `repo` pointer (last)
+=== 20261020T18z step5 check (source.coop, anonymous)
+1 complete   yes -- 350/350 chunks written
+   4/4 bit-exact
+VERDICT  PASS
+=== 20261020T18z step6 cGAN NetCDF from source.coop
+wrote /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261020_18Z.nc  1.99 GB  in 203s
+ceph:must-icechunk/cgan14-19e55e-25n15s-nc/IFS_20261020_18Z.nc  1.99 GB  ok
+=== 20261021T00z publish -> source.coop forecasts/ecmwf-ifs-0p1-cgan14-19e55e-25n15s/20261021T00z
+
+uploaded 437/437 objects, 2.56 GB in 33s = 76.9 MB/s (277 GB/h), 0 errors
+uploaded `repo` pointer (last)
+=== 20261021T00z step5 check (source.coop, anonymous)
+1 complete   yes -- 406/406 chunks written
+   4/4 bit-exact
+VERDICT  PASS
+=== 20261021T00z step6 cGAN NetCDF from source.coop
+wrote /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261021_00Z.nc  2.34 GB  in 272s
+ceph:must-icechunk/cgan14-19e55e-25n15s-nc/IFS_20261021_00Z.nc  2.34 GB  ok
+=== 20261022T00z publish -> source.coop forecasts/ecmwf-ifs-0p1-cgan14-19e55e-25n15s/20261022T00z
+
+nothing to upload
+`repo` pointer already in sync
+=== 20261022T00z step5 check (source.coop, anonymous)
+1 complete   yes -- 406/406 chunks written
+   4/4 bit-exact
+VERDICT  PASS
+=== 20261022T00z step6 cGAN NetCDF from source.coop
+wrote /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261022_00Z.nc  2.36 GB  in 309s
+ceph:must-icechunk/cgan14-19e55e-25n15s-nc/IFS_20261022_00Z.nc  2.36 GB  ok
+=== 20261023T00z publish -> source.coop forecasts/ecmwf-ifs-0p1-cgan14-19e55e-25n15s/20261023T00z
+
+nothing to upload
+`repo` pointer already in sync
+=== 20261023T00z step5 check (source.coop, anonymous)
+1 complete   yes -- 406/406 chunks written
+   4/4 bit-exact
+VERDICT  PASS
+=== 20261023T00z step6 cGAN NetCDF from source.coop
+wrote /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261023_00Z.nc  2.36 GB  in 473s
+ceph:must-icechunk/cgan14-19e55e-25n15s-nc/IFS_20261023_00Z.nc  2.36 GB  ok
+=== 20261024T00z publish -> source.coop forecasts/ecmwf-ifs-0p1-cgan14-19e55e-25n15s/20261024T00z
+
+nothing to upload
+`repo` pointer already in sync
+=== 20261024T00z step5 check (source.coop, anonymous)
+1 complete   yes -- 406/406 chunks written
+   4/4 bit-exact
+VERDICT  PASS
+=== 20261024T00z step6 cGAN NetCDF from source.coop

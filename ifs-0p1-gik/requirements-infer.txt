@@ -1,0 +1,9 @@
+# step7_infer.py only: the TF cGAN was trained with TensorFlow / Keras 2.15
+# (env/env-tf.yaml), which needs Python <= 3.11.
+#   uv venv .venv-infer --python 3.11
+#   uv pip install --python .venv-infer/bin/python -r requirements-infer.txt
+tensorflow-cpu==2.15.1      # or tensorflow[and-cuda]==2.15.1 on a GPU host
+numpy<2
+netCDF4
+xarray
+pyyaml

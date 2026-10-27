@@ -1,0 +1,27 @@
+=== 2026102400 waiting for the last step's 4 .index files 2026-10-27T09:56:56Z
+0p1/00z 20261024: 742478 refs from 340 .index files on GCS in 28.1s -- 51 sfc + 10 pl vars, 51 members, control from oper
+  26010 index lines share a key and were collapsed, last wins (stage-1 behaviour; soil levels of ['sot', 'vsw'])
+  committed 742478 refs at 0p1/00z[time=3] -> V5JVX30NADD579N21JJG (6.3s)
+  read-back: 12/12 chunks equal their direct decode (25.6s)
+=== 2026102400 build exit=0 wall=61s
+1037 objects local, 973 at dest, uploading 64 (17.4 MB) + repo
+uploaded 65 objects, 17.4 MB in 51.3s; `repo` pointer last -- MIRROR COMPLETE
+=== 2026102400 done 2026-10-27T09:58:53Z
+=== 2026102500 waiting for the last step's 4 .index files 2026-10-27T09:58:53Z
+0p1/00z 20261025: 742478 refs from 340 .index files on GCS in 25.2s -- 51 sfc + 10 pl vars, 51 members, control from oper
+  26010 index lines share a key and were collapsed, last wins (stage-1 behaviour; soil levels of ['sot', 'vsw'])
+  committed 742478 refs at 0p1/00z[time=4] -> D2HCA1HCZRANY6E5PDBG (6.1s)
+  read-back: 12/12 chunks equal their direct decode (23.1s)
+=== 2026102500 build exit=0 wall=55s
+1101 objects local, 1037 at dest, uploading 64 (17.4 MB) + repo
+uploaded 65 objects, 17.4 MB in 6.1s; `repo` pointer last -- MIRROR COMPLETE
+=== 2026102500 done 2026-10-27T09:59:58Z
+=== 2026102600 waiting for the last step's 4 .index files 2026-10-27T09:59:58Z
+0p1/00z 20261026: 742478 refs from 340 .index files on GCS in 25.5s -- 51 sfc + 10 pl vars, 51 members, control from oper
+  26010 index lines share a key and were collapsed, last wins (stage-1 behaviour; soil levels of ['sot', 'vsw'])
+  committed 742478 refs at 0p1/00z[time=5] -> DH6AJJSWJZ3VE2BCMERG (6.1s)
+  read-back: 12/12 chunks equal their direct decode (22.3s)
+=== 2026102600 build exit=0 wall=54s
+1165 objects local, 1101 at dest, uploading 64 (17.5 MB) + repo
+uploaded 65 objects, 17.5 MB in 69.1s; `repo` pointer last -- MIRROR COMPLETE
+=== 2026102600 done 2026-10-27T10:02:18Z

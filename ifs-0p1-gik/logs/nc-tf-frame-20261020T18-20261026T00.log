@@ -1,0 +1,46 @@
+=== 20261020T18z step6 cGAN NetCDF (TF frame) from source.coop  2026-10-27T12:32:25Z
+wrote /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261020_18Z.nc  2.31 GB  in 218s
+=== 20261020T18z step7 dry run (MODEL_FOLDER/CHECKPOINT not set: inputs checked, no inference)
+input    /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261020_18Z.nc  50 members x 25 valid times  -> 24 windows 0..144 h
+  window   0-  6 h  input (1, 384, 352, 56)  range -5.51..2.22  tp mean ch 0.0246
+  window 138-144 h  input (1, 384, 352, 56)  range -5.53..3.05  tp mean ch 0.0451
+dry run  OK: 24 windows of finite 1x384x352x56 input in 38s
+    removed /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261020_18Z.nc
+=== 20261021T00z step6 cGAN NetCDF (TF frame) from source.coop  2026-10-27T12:36:50Z
+wrote /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261021_00Z.nc  2.72 GB  in 310s
+=== 20261021T00z step7 dry run (MODEL_FOLDER/CHECKPOINT not set: inputs checked, no inference)
+input    /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261021_00Z.nc  50 members x 29 valid times  -> 28 windows 0..168 h
+  window   0-  6 h  input (1, 384, 352, 56)  range -5.51..1.87  tp mean ch 0.0238
+  window 162-168 h  input (1, 384, 352, 56)  range -5.52..2.05  tp mean ch 0.0402
+dry run  OK: 28 windows of finite 1x384x352x56 input in 44s
+    removed /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261021_00Z.nc
+=== 20261022T00z step6 cGAN NetCDF (TF frame) from source.coop  2026-10-27T12:42:52Z
+wrote /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261022_00Z.nc  2.75 GB  in 287s
+=== 20261022T00z step7 dry run (MODEL_FOLDER/CHECKPOINT not set: inputs checked, no inference)
+input    /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261022_00Z.nc  50 members x 29 valid times  -> 28 windows 0..168 h
+  window   0-  6 h  input (1, 384, 352, 56)  range -5.51..1.82  tp mean ch 0.0329
+  window 162-168 h  input (1, 384, 352, 56)  range -5.53..2.01  tp mean ch 0.0305
+dry run  OK: 28 windows of finite 1x384x352x56 input in 44s
+    removed /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261022_00Z.nc
+=== 20261023T00z step6 cGAN NetCDF (TF frame) from source.coop  2026-10-27T12:48:30Z
+wrote /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261023_00Z.nc  2.75 GB  in 263s
+=== 20261023T00z step7 dry run (MODEL_FOLDER/CHECKPOINT not set: inputs checked, no inference)
+input    /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261023_00Z.nc  50 members x 29 valid times  -> 28 windows 0..168 h
+  window   0-  6 h  input (1, 384, 352, 56)  range -5.51..1.92  tp mean ch 0.0242
+  window 162-168 h  input (1, 384, 352, 56)  range -5.53..1.98  tp mean ch 0.0319
+dry run  OK: 28 windows of finite 1x384x352x56 input in 44s
+    removed /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261023_00Z.nc
+=== 20261024T00z step6 cGAN NetCDF (TF frame) from source.coop  2026-10-27T12:53:44Z
+wrote /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261024_00Z.nc  2.76 GB  in 250s
+=== 20261024T00z step7 dry run (MODEL_FOLDER/CHECKPOINT not set: inputs checked, no inference)
+input    /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261024_00Z.nc  50 members x 29 valid times  -> 28 windows 0..168 h
+  window   0-  6 h  input (1, 384, 352, 56)  range -5.52..1.97  tp mean ch 0.031
+  window 162-168 h  input (1, 384, 352, 56)  range -5.52..1.95  tp mean ch 0.029
+dry run  OK: 28 windows of finite 1x384x352x56 input in 44s
+    removed /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261024_00Z.nc
+=== 20261025T00z step6 cGAN NetCDF (TF frame) from source.coop  2026-10-27T12:58:45Z
+=== 20261025T00z no NetCDF
+=== done 2026102018 2026102100 2026102200 2026102300 2026102400 2026102500 of 2026102018 2026102100 2026102200 2026102300 2026102400 2026102500  2026-10-27T13:04:39Z
+=== 20261026T00z step6 cGAN NetCDF (TF frame) from source.coop  2026-10-27T13:04:39Z
+=== 20261026T00z no NetCDF
+=== done 2026102600 of 2026102600  2026-10-

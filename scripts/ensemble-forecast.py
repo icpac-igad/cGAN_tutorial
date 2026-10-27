@@ -17,12 +17,12 @@ from tensorflow import keras
 from keras.utils import Progbar
 
 import sys 
-sys.path.insert("../data/")
+sys.path.insert(1, "../data/")
 from data_old import HOURS, all_fcst_fields, accumulated_fields, nonnegative_fields, fcst_norm, logprec, denormalise, load_hires_constants
 
 import sys
 sys.path.insert(1,"../")
-fron config import set_gpu_mode, get_data_paths, read_downscaling_factor
+from config import set_gpu_mode, get_data_paths, read_downscaling_factor
 from model import NoiseGenerator
 from setupmodel import setup_model
 

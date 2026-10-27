@@ -16,7 +16,8 @@ PY=${PY:-$D/.venv/bin/python}
 DATE=${1:?YYYYMMDD}; RUN=${RUN:-00}
 ROOT=${IFS0P1_LOCAL_ROOT:-$HOME/icechunk-local}
 VD=$ROOT/ecmwf-ifs-0p1-icechunk-vd
-SINK=$ROOT/ecmwf-ifs-0p1-cgan14-20e53e-25n15s/${DATE}${RUN}z
+TAG=$($PY -c "import sys; sys.path.insert(0, '$D'); import config; print(config.BOX_TAG)")
+SINK=$ROOT/ecmwf-ifs-0p1-cgan14-$TAG/${DATE}T${RUN}z
 EXTRA=()
 [ -n "${STEPS:-}" ] && EXTRA+=(--steps $STEPS)
 [ -n "${MEMBERS:-}" ] && EXTRA+=(--members $MEMBERS)

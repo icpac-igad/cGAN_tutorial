@@ -11,13 +11,14 @@ import os
 # ---------------------------------------------------------------------------
 # Domain: East Africa, the cGAN inference box. Every edge lies on the 0.1 deg
 # grid (-180 + 0.1k, 90 - 0.1j), so the cut is exact -- no interpolation.
-#   401 rows (25N -> 15S, store order descending) x 331 cols (20E -> 53E)
-# NOTE: the TF cGAN trained frame is 384 x 352 at -13.65..24.65N,
+#   401 rows (25N -> 15S, store order descending) x 361 cols (19E -> 55E)
+# This covers the TF cGAN trained frame, 384 x 352 at -13.65..24.65N,
 # 19.15..54.25E (cGAN_tutorial/docs/ecmwf_icechunk_dask_variable_extraction.md
-# section 5.2). 20..53E does not cover its east/west edges -- README section 8.
+# section 5.2), with a margin on every side for interpolation onto it.
+# (The first trial used 20..53E, BOX_TAG 20e53e-25n15s, which did not.)
 # ---------------------------------------------------------------------------
-BOX = dict(lat_max=25.0, lat_min=-15.0, lon_min=20.0, lon_max=53.0, deg=0.1)
-BOX_TAG = "20e53e-25n15s"
+BOX = dict(lat_max=25.0, lat_min=-15.0, lon_min=19.0, lon_max=55.0, deg=0.1)
+BOX_TAG = "19e55e-25n15s"
 
 # ---------------------------------------------------------------------------
 # The 14 cGAN forecast fields (data.all_fcst_fields; RFE2_cGAN_RUNBOOK.md):
@@ -48,7 +49,8 @@ ACCUMULATED = ("tp", "cp", "ssr")
 
 # 0..168 h every 6 h = 29 lead times: what ensemble-forecast.py indexes as
 # valid_time (HOURS = 6). All are on both the 3-hourly (<=144 h) and the
-# 6-hourly (>144 h) part of the 00z/12z step axis.
+# 6-hourly (>144 h) part of the 00z/12z step axis. 06z/18z runs stop at 144 h,
+# so they get the 25 lead times 0..144 h (step4 trims, step6 warns).
 STEPS = list(range(0, 169, 6))
 MEMBERS = list(range(51))          # 0 = control (oper/fc), 1..50 perturbed
 
@@ -75,9 +77,14 @@ REAL_LOCAL_ROOT = os.environ.get("REAL_LOCAL_ROOT",
 REAL_CEPH_ROOT = f"cgan14-{BOX_TAG}"
 REAL_SOURCECOOP_ROOT = f"forecasts/ecmwf-ifs-0p1-cgan14-{BOX_TAG}"
 
+# cGAN inference output (step 7), GAN_IFS_<YYYYMMDD>_<HH>Z.nc per cycle, on the
+# TF frame. Uploaded only with UPLOAD_GAN=1 (run_ewc.sh); off for now.
+GAN_SOURCECOOP_ROOT = "forecasts/ecmwf-ifs-0p1-cgan-gan6h"
+
 
 def cycle_name(date8: str, run: str = "00") -> str:
-    return f"{date8}{run}z"
+    """One realized store per cycle, named e.g. 20261021T00z."""
+    return f"{date8}T{run}z"
 
 
 def real_spec(mode: str, date8: str, run: str = "00") -> str:

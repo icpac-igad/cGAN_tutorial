@@ -2,3 +2,6 @@
 __pycache__/
 *.nc
 logs/*.tsv
+.venv-infer/
+gan/
+nc/

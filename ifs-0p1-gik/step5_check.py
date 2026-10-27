@@ -10,10 +10,10 @@
 
 Exit status 0 only if all three pass.
 
-  python step5_check.py --store local:$HOME/icechunk-local/.../2026102100z \\
+  python step5_check.py --store local:$HOME/icechunk-local/.../20261021T00z \\
       --vd local:$HOME/icechunk-local/ecmwf-ifs-0p1-icechunk-vd
-  python step5_check.py --store ceph:cgan14-20e53e-25n15s/2026102100z --env ~/.env.ceph
-  python step5_check.py --store sourcecoop:forecasts/ecmwf-ifs-0p1-cgan14-20e53e-25n15s/2026102100z
+  python step5_check.py --store ceph:cgan14-19e55e-25n15s/20261021T00z --env ~/.env.ceph
+  python step5_check.py --store sourcecoop:forecasts/ecmwf-ifs-0p1-cgan14-19e55e-25n15s/20261021T00z
 """
 from __future__ import annotations
 

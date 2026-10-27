@@ -20,10 +20,10 @@ Examples
 --------
   # local only, no source.coop anywhere (virtual store built by step1 locally)
   python step4_realize.py --date 20261021 --vd local:$HOME/icechunk-local/ecmwf-ifs-0p1-icechunk-vd \\
-      --sink local:$HOME/icechunk-local/ecmwf-ifs-0p1-cgan14-20e53e-25n15s/2026102100z
+      --sink local:$HOME/icechunk-local/ecmwf-ifs-0p1-cgan14-19e55e-25n15s/20261021T00z
 
   # EWC workers -> Ceph, reading the public virtual store
-  python step4_realize.py --date 20261021 --sink ceph:cgan14-20e53e-25n15s/2026102100z \\
+  python step4_realize.py --date 20261021 --sink ceph:cgan14-19e55e-25n15s/20261021T00z \\
       --env ~/.env.ceph --scheduler 192.168.1.164:8798
 """
 from __future__ import annotations
@@ -78,8 +78,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--date", required=True, help="YYYYMMDD")
-    ap.add_argument("--run", default="00", choices=["00", "12"],
-                    help="00/12 reach 168 h; 06/18 stop at 144 h")
+    ap.add_argument("--run", default="00", choices=["00", "06", "12", "18"],
+                    help="00/12 reach 168 h; 06/18 stop at 144 h (25 lead times)")
     ap.add_argument("--vd", default=C.vd_spec("sourcecoop"),
                     help="virtual store spec (coordinates, provenance, --full-read)")
     ap.add_argument("--sink", required=True, help="local:/path or ceph:<prefix>")
@@ -92,7 +92,8 @@ def main():
     ap.add_argument("--max-inflight", type=int, default=40,
                     help="blocks queued at once (sliding window; bounds memory)")
     ap.add_argument("--fields", nargs="+", default=list(C.FIELDS))
-    ap.add_argument("--steps", type=int, nargs="+", default=C.STEPS)
+    ap.add_argument("--steps", type=int, nargs="+", default=None,
+                    help="lead times, h (default: config.STEPS the run has)")
     ap.add_argument("--members", type=int, default=len(C.MEMBERS),
                     help="first N members (0 = control)")
     ap.add_argument("--full-read", action="store_true",
@@ -114,7 +115,6 @@ def main():
         sys.exit(f"unknown fields {sorted(unknown)}; known {list(C.FIELDS)}")
     fields = {f: C.FIELDS[f] for f in a.fields}
     members = list(range(a.members))
-    steps = list(a.steps)
     date8, run, box = a.date, a.run, C.BOX
     ny, nx = C.box_shape(box)
 
@@ -126,6 +126,13 @@ def main():
         sys.exit(f"{date8} {run}z is not in the virtual store {a.vd} "
                  f"(run step1_build_virtual.py first)")
     vd_steps = set(int(s / np.timedelta64(1, "h")) for s in ds.step.values)
+    if a.steps is None:                  # 06z/18z: 0..144 h, 25 of the 29
+        steps = [s for s in C.STEPS if s in vd_steps]
+        if len(steps) < len(C.STEPS):
+            print(f"NOTE     {run}z stops at {max(vd_steps)} h: {len(steps)} of the "
+                  f"{len(C.STEPS)} cGAN lead times")
+    else:
+        steps = list(a.steps)
     if set(steps) - vd_steps:
         sys.exit(f"steps {sorted(set(steps) - vd_steps)} not in the store")
     sub = ds["t2m"].sel(latitude=slice(box["lat_max"], box["lat_min"]),

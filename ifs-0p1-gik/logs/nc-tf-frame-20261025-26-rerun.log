@@ -1,0 +1,17 @@
+=== 20261025T00z step6 cGAN NetCDF (TF frame) from source.coop  2026-10-27T13:10:38Z
+wrote /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261025_00Z.nc  2.77 GB  in 480s
+=== 20261025T00z step7 dry run (MODEL_FOLDER/CHECKPOINT not set: inputs checked, no inference)
+input    /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261025_00Z.nc  50 members x 29 valid times  -> 28 windows 0..168 h
+  window   0-  6 h  input (1, 384, 352, 56)  range -5.52..1.8  tp mean ch 0.04
+  window 162-168 h  input (1, 384, 352, 56)  range -5.52..1.97  tp mean ch 0.0355
+dry run  OK: 28 windows of finite 1x384x352x56 input in 44s
+    removed /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261025_00Z.nc
+=== done 2026102500 of 2026102500  2026-10-27T13:19:30Z
+=== 20261026T00z step6 cGAN NetCDF (TF frame) from source.coop  2026-10-27T13:19:30Z
+wrote /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261026_00Z.nc  2.76 GB  in 395s
+=== 20261026T00z step7 dry run (MODEL_FOLDER/CHECKPOINT not set: inputs checked, no inference)
+input    /home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/nc/IFS_20261026_00Z.nc  50 members x 29 valid times  -> 28 windows 0..168 h
+  window   0-  6 h  input (1, 384, 352, 56)  range -5.52..1.81  tp mean ch 0.0286
+  window 162-168 h  input (1, 384, 352, 56)  range -5.52..1.99  tp mean ch 0.0346
+dry run  OK: 28 windows of finite 1x384x352x56 input in 44s
+=== done 2026102600 of 2026102600  2026-10-27T13:26:56Z
