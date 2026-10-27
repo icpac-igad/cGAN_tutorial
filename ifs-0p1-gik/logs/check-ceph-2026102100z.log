@@ -1,0 +1,36 @@
+store    ceph:cgan14-20e53e-25n15s/2026102100z  snapshot W2JQTBAHHPWT5V8J5PNG
+cycle    20261021 00z  14 fields x 29 steps x 51 members x 401x331
+built    from sourcecoop:forecasts/ecmwf-ifs-0p1-icechunk-vd @ 6AK8YKP0TDZJ085CV960, prefix+libaec
+summary  {'blocks': 406, 'messages': 20706, 'wall_s': 324.7, 'msg_per_s': 63.76, 'bytes_fetched': 28371182259, 'bytes_whole_messages': 42054083530, 'saved_pct': 32.5, 'topup_gets': 5}
+1 complete   yes -- 406/406 chunks written
+2 exact      12 boxes vs whole messages via sourcecoop:forecasts/ecmwf-ifs-0p1-icechunk-vd
+     cp    + 60h m32  equal
+     tcrw  +120h m6   equal
+     sp    +168h m38  equal
+     tcw   +102h m26  equal
+     u700  +108h m35  equal
+     v700  +138h m49  equal
+     u700  + 90h m48  equal
+     u700  +108h m28  equal
+     sp    +  0h m39  equal
+     cp    + 18h m18  equal
+     v700  + 18h m28  equal
+     cape  +156h m43  equal
+   12/12 bit-exact
+3 sane
+     cape  finite 1.000  spread@168h      341.6  mean        559 ->      804.8
+     cp    finite 1.000  spread@168h   0.005405  mean          0 ->   0.008546  (accumulated)
+     mcc   finite 1.000  spread@168h      0.145  mean    0.09861 ->     0.1189
+     sp    finite 1.000  spread@168h      70.58  mean  9.486e+04 ->  9.478e+04
+     ssr   finite 1.000  spread@168h  4.593e+06  mean          0 ->  1.288e+08  (accumulated)
+     t2m   finite 1.000  spread@168h     0.8716  mean      296.9 ->      296.5
+     tciw  finite 1.000  spread@168h    0.03037  mean    0.01672 ->    0.01496
+     tclw  finite 1.000  spread@168h    0.02716  mean    0.01221 ->    0.01669
+     tcrw  finite 1.000  spread@168h    0.05749  mean    0.02162 ->    0.02909
+     tcw   finite 1.000  spread@168h      3.928  mean      31.21 ->      33.31
+     tcwv  finite 1.000  spread@168h      3.803  mean       31.1 ->      33.18
+     tp    finite 1.000  spread@168h   0.008348  mean          0 ->     0.0154  (accumulated)
+     u700  finite 1.000  spread@168h      2.377  mean     -2.817 ->     -3.055
+     v700  finite 1.000  spread@168h      2.125  mean    -0.1485 ->     -0.555
+   ok
+VERDICT  PASS

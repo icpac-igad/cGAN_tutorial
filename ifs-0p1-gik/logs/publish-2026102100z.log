@@ -1,0 +1,12 @@
+source  ceph://must-icechunk/cgan14-20e53e-25n15s/2026102100z
+dest    s3://e4drr-project/forecasts/ecmwf-ifs-0p1-cgan14-20e53e-25n15s/2026102100z
+workers 4 processes x 48 threads
+
+listing source ...
+  436 objects, 2.35 GB in 0s
+  destination already holds 0 objects
+  to upload: 436 objects, 2.35 GB (0 already in sync)
+  at 90 MB/s (4 procs, one host): 0.4 min -> 0.01 h
+
+uploaded 436/436 objects, 2.35 GB in 25s = 94.9 MB/s (342 GB/h), 0 errors
+uploaded `repo` pointer (last)

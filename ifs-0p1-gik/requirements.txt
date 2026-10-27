@@ -1,0 +1,13 @@
+# Client (gateway / laptop) environment for every step of ifs-0p1-gik.
+# Same pins as the EWC worker venv built by step3_deploy_workers.py.
+frisky==0.7.2
+icechunk==2.1.1
+zarr==3.2.1
+xarray==2026.7.0
+gribberish==1.6.0
+numpy==2.5.1
+imagecodecs            # libaec, for the prefix decode in cgan_dag.read_prefix
+pandas==3.0.3          # step1 (virtual store builder)
+pyarrow==25.0.0
+netCDF4==1.7.4         # step6 (cGAN NetCDF)
+boto3                  # publish_*_to_source_coop.py

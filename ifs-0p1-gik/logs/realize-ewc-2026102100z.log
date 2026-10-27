@@ -1,0 +1,19 @@
+virtual  sourcecoop:forecasts/ecmwf-ifs-0p1-icechunk-vd  snapshot 6AK8YKP0TDZJ085CV960  (7.8s)
+box      lat 25.0..-15.0  lon 20.0..53.0  401 x 331 at 0.1 deg
+work     14 fields x 29 steps = 406 blocks x 51 members = 20,706 messages, prefix read
+sink     ceph:cgan14-20e53e-25n15s/2026102100z  created  schema 1RF9A89T7B2302NN5V9G
+cluster  EWC scheduler 192.168.1.164:8798, 4 GETs per block task, 40 blocks in flight
+     40/406 blocks      48s   42.7 msg/s
+     80/406 blocks      83s   49.4 msg/s
+    120/406 blocks     119s   51.6 msg/s
+    160/406 blocks     145s   56.3 msg/s
+    200/406 blocks     174s   58.7 msg/s
+    240/406 blocks     205s   59.6 msg/s
+    280/406 blocks     238s   60.1 msg/s
+    320/406 blocks     262s   62.3 msg/s
+    360/406 blocks     295s   62.3 msg/s
+    400/406 blocks     321s   63.5 msg/s
+committed W2JQTBAHHPWT5V8J5PNG
+wall     325s  63.8 msg/s  (406 blocks)
+bytes    fetched 28.37 of 42.05 GB whole-message (saved 32.5%), 5 top-up GETs, mean GET 1.47s, decode 31 ms
+blocks   mean read 22.5s, mean write 0.94s

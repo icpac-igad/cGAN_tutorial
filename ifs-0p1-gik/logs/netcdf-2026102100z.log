@@ -1,0 +1,18 @@
+/home/ubuntu/nishadhka-work/cGAN_tutorial/ifs-0p1-gik/step6_make_cgan_netcdf.py:141: DeprecationWarning: Setting the shape on a NumPy array has been deprecated in NumPy 2.5.
+As an alternative, you can create a new view using np.reshape (with copy=False if needed).
+  var[0, :, k, :, :] = block
+  cape  29 valid times x 10 members     259s
+  cp    29 valid times x 10 members     270s
+  mcc   29 valid times x 10 members     278s
+  sp    29 valid times x 10 members     293s
+  ssr   29 valid times x 10 members     306s
+  t2m   29 valid times x 10 members     317s
+  tciw  29 valid times x 10 members     323s
+  tclw  29 valid times x 10 members     335s
+  tcrw  29 valid times x 10 members     343s
+  tcw   29 valid times x 10 members     356s
+  tcwv  29 valid times x 10 members     368s
+  tp    29 valid times x 10 members     377s
+  u700  29 valid times x 10 members     389s
+  v700  29 valid times x 10 members     403s
+wrote /tmp/claude-1000/-home-ubuntu-nishadhka-work-grib-index-kerchunk/8292fc77-5cea-4bbe-ba76-95888a456251/scratchpad/nc-test/IFS_20261021_00Z.nc  0.43 GB  in 404s
