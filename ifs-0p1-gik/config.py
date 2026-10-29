@@ -54,6 +54,23 @@ ACCUMULATED = ("tp", "cp", "ssr")
 STEPS = list(range(0, 169, 6))
 MEMBERS = list(range(51))          # 0 = control (oper/fc), 1..50 perturbed
 
+# ---------------------------------------------------------------------------
+# The SEWAA operational products (vendor/PROVENANCE.md). Each reads its own
+# IFS_<YYYYMMDD>_<HH>Z.nc of ensemble mean + sd, and needs only these lead times:
+#   jurre-6h  test_forecast.py, forecast-*.yaml 30..54 h; the file must START at
+#             +30 h (the script hard-codes the offset) -> 5 lead times, 4 windows
+#   mvua-7d   forecast_date.py, 7 x 24 h from +6 h; reads indices 1..29 of a file
+#             starting at +0 h -> 0..174 h, 30 lead times. +174 h is in the 6-hourly
+#             part of the 00z/12z runs; 06z/18z stop at 144 h and cannot make it.
+# `dir` is the folder name the SEWAA jobs read from (and the SFTP source dir).
+# ---------------------------------------------------------------------------
+PRODUCTS = {
+    "jurre-6h": dict(steps=list(range(30, 55, 6)), dir="cgan-ifs-6h-ens",
+                     sftp_dir="/data/Operational", checkpoint=316800),
+    "mvua-7d":  dict(steps=list(range(0, 175, 6)), dir="cgan-ifs-7d-ens",
+                     sftp_dir="/data/Operational_7d", checkpoint=300800),
+}
+
 ERA = "0p1"
 
 # ---------------------------------------------------------------------------

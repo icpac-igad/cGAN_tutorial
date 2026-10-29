@@ -22,6 +22,10 @@ Examples
   python step4_realize.py --date 20261021 --vd local:$HOME/icechunk-local/ecmwf-ifs-0p1-icechunk-vd \\
       --sink local:$HOME/icechunk-local/ecmwf-ifs-0p1-cgan14-19e55e-25n15s/20261021T00z
 
+  # only what the SEWAA products need (config.PRODUCTS), public virtual store, local sink
+  python step4_realize.py --date 20261026 --product jurre-6h mvua-7d \\
+      --sink local:$HOME/icechunk-local/ecmwf-ifs-0p1-cgan14-19e55e-25n15s/20261026T00z-jurre-6h+mvua-7d
+
   # EWC workers -> Ceph, reading the public virtual store
   python step4_realize.py --date 20261021 --sink ceph:cgan14-19e55e-25n15s/20261021T00z \\
       --env ~/.env.ceph --scheduler 192.168.1.164:8798
@@ -94,6 +98,9 @@ def main():
     ap.add_argument("--fields", nargs="+", default=list(C.FIELDS))
     ap.add_argument("--steps", type=int, nargs="+", default=None,
                     help="lead times, h (default: config.STEPS the run has)")
+    ap.add_argument("--product", nargs="+", choices=list(C.PRODUCTS), default=None,
+                    help="realize only the lead times these SEWAA products need "
+                         "(config.PRODUCTS; jurre-6h 30..54 h, mvua-7d 0..174 h)")
     ap.add_argument("--members", type=int, default=len(C.MEMBERS),
                     help="first N members (0 = control)")
     ap.add_argument("--full-read", action="store_true",
@@ -126,7 +133,15 @@ def main():
         sys.exit(f"{date8} {run}z is not in the virtual store {a.vd} "
                  f"(run step1_build_virtual.py first)")
     vd_steps = set(int(s / np.timedelta64(1, "h")) for s in ds.step.values)
-    if a.steps is None:                  # 06z/18z: 0..144 h, 25 of the 29
+    if a.product:
+        if a.steps is not None:
+            sys.exit("give --steps or --product, not both")
+        steps = sorted({s for p in a.product for s in C.PRODUCTS[p]["steps"]})
+        lack = sorted(set(steps) - vd_steps)
+        if lack:
+            sys.exit(f"{run}z has no {lack} h (06z/18z stop at 144 h): "
+                     f"{' '.join(a.product)} cannot be made from this run")
+    elif a.steps is None:                  # 06z/18z: 0..144 h, 25 of the 29
         steps = [s for s in C.STEPS if s in vd_steps]
         if len(steps) < len(C.STEPS):
             print(f"NOTE     {run}z stops at {max(vd_steps)} h: {len(steps)} of the "
@@ -155,6 +170,7 @@ def main():
                      cycle=f"{date8} {run}z", box=box, fields=list(fields),
                      virtual_store=a.vd, virtual_store_snapshot=vd_snap,
                      read_method="virtual" if a.full_read else "prefix+libaec",
+                     products=a.product or [],
                      source="s3://ecmwf-forecasts (fallback gs://ecmwf-open-data)",
                      workflow="cGAN_tutorial/ifs-0p1-gik")
         tv = int((tval - np.datetime64("1970-01-01T00:00")) / np.timedelta64(1, "h"))
