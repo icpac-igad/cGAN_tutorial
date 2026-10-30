@@ -12,6 +12,9 @@ Where it runs
 -------------
   local cluster   --workers N --threads T     (default)  everything on this host;
                   sink may be local: (or ceph:)
+  no cluster      --no-cluster --threads T    no Frisky: T block tasks on threads
+                  in this one process (each task on its own copy of the fork,
+                  as a worker would get it), --pool GETs inside each
   EWC cluster     --scheduler IP:PORT                    the Frisky workers of
                   step3_deploy_workers.py; sink must be ceph: (the workers cannot
                   see this host's disk)
@@ -33,7 +36,9 @@ Examples
 from __future__ import annotations
 
 import argparse
+import concurrent.futures as cf
 import os
+import pickle
 import sys
 import time
 
@@ -78,6 +83,43 @@ def create_schema(repo, fields, steps, members, lat, lon, time_val, attrs):
                        f"{len(members)} members x {len(lat)}x{len(lon)}")
 
 
+class Inline:
+    """--no-cluster: the client interface run_blocks uses, on local threads.
+
+    A task gets a pickled copy of the fork, exactly as a Frisky worker does, so
+    the block writes land in separate forks and merge the same way.
+    """
+
+    def __init__(self, threads):
+        self.ex = cf.ThreadPoolExecutor(threads)
+
+    def submit(self, fn, fork, *args):
+        f = self.ex.submit(fn, pickle.loads(pickle.dumps(fork)), *args)
+        f.key = id(f)
+        return f
+
+    def close(self):
+        self.ex.shutdown()
+
+
+class InlineAsCompleted:
+    """frisky.as_completed() for Inline futures: add / is_empty / next."""
+
+    def __init__(self):
+        self.fs = set()
+
+    def add(self, f):
+        self.fs.add(f)
+
+    def is_empty(self):
+        return not self.fs
+
+    def __next__(self):
+        f = next(cf.as_completed(self.fs))
+        self.fs.discard(f)
+        return f
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -90,8 +132,11 @@ def main():
     ap.add_argument("--env", default=None, help="Ceph AK/SK file (ceph: sinks)")
     ap.add_argument("--scheduler", default=None,
                     help="EWC Frisky scheduler IP:PORT; omit for a local cluster")
+    ap.add_argument("--no-cluster", action="store_true",
+                    help="no Frisky cluster: --threads block tasks in this process")
     ap.add_argument("--workers", type=int, default=2, help="local cluster processes")
-    ap.add_argument("--threads", type=int, default=4, help="local: block tasks per process")
+    ap.add_argument("--threads", type=int, default=4,
+                    help="local: block tasks per process (--no-cluster: in total)")
     ap.add_argument("--pool", type=int, default=4, help="GET threads inside one block task")
     ap.add_argument("--max-inflight", type=int, default=40,
                     help="blocks queued at once (sliding window; bounds memory)")
@@ -112,6 +157,8 @@ def main():
                     help="wipe and re-lay the schema of an existing sink")
     a = ap.parse_args()
 
+    if a.scheduler and a.no_cluster:
+        sys.exit("--scheduler and --no-cluster exclude each other")
     if a.scheduler and S.parse(a.sink)[0] == "local":
         sys.exit("EWC workers cannot write this host's disk: use a ceph: sink "
                  "with --scheduler, or drop --scheduler for a local cluster")
@@ -181,12 +228,16 @@ def main():
               f"to change its shape)")
 
     # -- 3. the cluster ------------------------------------------------------
-    import frisky
     cluster = None
-    if a.scheduler:
+    if a.no_cluster:
+        client = Inline(a.threads)
+        where = f"no cluster: {a.threads} block threads in this process"
+    elif a.scheduler:
+        import frisky
         client = frisky.Client(a.scheduler)
         where = f"EWC scheduler {a.scheduler}"
     else:
+        import frisky
         # get_client(), not Client(cluster): the latter raises, and the live
         # worker processes then keep the interpreter from exiting.
         cluster = frisky.LocalCluster(n_workers=a.workers, threads_per_worker=a.threads,
@@ -204,7 +255,11 @@ def main():
 
 
 def run_blocks(a, repo, client, fields, steps, members, date8, run, box, vd_snap):
-    import frisky
+    if isinstance(client, Inline):
+        as_completed = InlineAsCompleted
+    else:
+        import frisky
+        as_completed = frisky.as_completed
     n_blocks = len(fields) * len(steps)
 
     # -- 4. one fork, blocks through a sliding window, one commit -----------
@@ -215,7 +270,7 @@ def run_blocks(a, repo, client, fields, steps, members, date8, run, box, vd_snap
     done = 0
     for rnd in range(a.rounds):
         queue, failed, errs = list(pending), [], []
-        meta, ac = {}, frisky.as_completed()
+        meta, ac = {}, as_completed()
 
         def submit(spec):
             name, si, step_h = spec
@@ -259,7 +314,9 @@ def run_blocks(a, repo, client, fields, steps, members, date8, run, box, vd_snap
     wall = time.time() - t_run
     n_msg = n_blocks * len(members)
     summary = dict(blocks=n_blocks, messages=n_msg, wall_s=round(wall, 1),
-                   msg_per_s=round(n_msg / wall, 2))
+                   msg_per_s=round(n_msg / wall, 2),
+                   executor=("no-cluster" if a.no_cluster else "ewc" if a.scheduler
+                             else "local-cluster") + f" threads={a.threads} pool={a.pool}")
     if tot.get("bytes_full"):
         summary.update(bytes_fetched=int(tot["bytes_fetched"]),
                        bytes_whole_messages=int(tot["bytes_full"]),
