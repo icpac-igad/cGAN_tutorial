@@ -12,7 +12,7 @@ log, timing file and stores by [`make_local_run_report.py`](make_local_run_repor
 
 | | |
 |---|---|
-| Code | `cGAN_tutorial/ifs-0p1-gik` at commit **`57ee2cc`** (step4 `--no-cluster`, per-stage timing), on top of `1ff14c2` (the SEWAA products) |
+| Code | `cGAN_tutorial/ifs-0p1-gik` at commit **`185b789`** (step4 `--no-cluster`, per-stage timing), on top of `1ff14c2` (the SEWAA products) |
 | Driver | `run_local.sh <YYYYMMDD>` once per date, with `BUILD_VD=1 PRODUCTS="jurre-6h mvua-7d"`, the cycles in sequence (below) |
 | Machine | `jupyterhub-gateway2`, AMD EPYC 7713, 8 vCPU, 31 GB RAM; stores and outputs on a local 100 GB disk (`/srv/state`) |
 | Cluster | **none**: step4 runs its block tasks on 12 threads inside one process (`--no-cluster --threads 12`, 4 GETs per block); no Dask, Frisky or EWC workers |

@@ -42,7 +42,7 @@ Full report: **[`runs/2026-10-30-local-9day-endtoend.md`](runs/2026-10-30-local-
 - the virtual store built locally for each cycle;
 - step 7 as `--dry-run` (no weights loaded), so the times stop just before the generator.
 
-The code is at `57ee2cc`.
+The code is at `185b789`.
 
 | Stage | Mean per cycle | Range |
 |---|---|---|

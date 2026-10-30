@@ -2,7 +2,7 @@
 
     python runs/make_local_run_report.py --log /srv/state/ifs0p1/run9.log \\
         --timing /srv/state/ifs0p1/timing9.tsv --out runs/2026-10-30-local-9day-endtoend.md \\
-        --title "..." --commit 57ee2cc
+        --title "..." --commit 185b789
 
 Everything in the report is read from the log, the TSV, the stores on disk and
 the step4 prefix-read counters (CGAN_DAG_HOME/prefix-stats-<pid>.json, matched
