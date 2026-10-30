@@ -78,7 +78,7 @@ sys.exit(0 if want in g["time"][:] else 1)
 EOF
   then
     $PY "$D/step1_build_virtual.py" --date $DATE --run $RUN --resolution 0p1 --store "$VDDIR" \
-        --verify 8 2>&1 | grep -v -E "$F"
+        --verify 8 2>&1 | grep --line-buffered -v -E "$F"
   else
     echo "    ${DATE} ${RUN}z already in the local virtual store"
   fi
@@ -97,16 +97,16 @@ else
 fi
 echo "=== step4 realize $PRODUCTS -> $SINK"
 $PY -u "$D/step4_realize.py" --date $DATE --run $RUN --vd "$VD" --sink "local:$SINK" \
-    --product $PRODUCTS "${EXTRA[@]}" 2>&1 | grep -v -E "$F"
+    --product $PRODUCTS "${EXTRA[@]}" 2>&1 | grep --line-buffered -v -E "$F"
 tick step4_realize
 
 echo "=== step5 check"
-$PY -u "$D/step5_check.py" --store "local:$SINK" --vd "$VD" --samples 8 2>&1 | grep -v -E "$F"
+$PY -u "$D/step5_check.py" --store "local:$SINK" --vd "$VD" --samples 8 2>&1 | grep --line-buffered -v -E "$F"
 tick step5_check
 
 echo "=== step6 SEWAA NetCDF -> $OUT"
 $PY -u "$D/step6_sewaa_netcdf.py" --store "local:$SINK" --outdir "$OUT" --product $PRODUCTS \
-    --members ${NC_MEMBERS:-all} --ddof ${DDOF:-0} 2>&1 | grep -v -E "$F"
+    --members ${NC_MEMBERS:-all} --ddof ${DDOF:-0} 2>&1 | grep --line-buffered -v -E "$F"
 tick step6_netcdf
 
 f=IFS_${DATE}_${RUN}Z.nc
@@ -125,11 +125,11 @@ for p in $PRODUCTS; do
     echo "=== step7 $p cGAN inference -> $GAN_OUT/$NAME"
     $TFPY -u "$D/step7_infer.py" --nc "$IN" --constants "$CO" --model-folder "$MF" "${W[@]}" \
         --outdir "$GAN_OUT/$NAME" --ensemble-members ${GAN_MEMBERS:-50} 2>&1 \
-        | grep -E 'input|model|window|wrote|Error|error'
+        | grep --line-buffered -E 'input|model|window|wrote|Error|error'
   else
     echo "=== step7 $p dry run (${p%%-*} model folder not set: inputs checked, no inference)"
     $PY -u "$D/step7_infer.py" --nc "$IN" --constants "$CO" --dry-run 2>&1 \
-        | grep -E 'input|window|dry run|non-finite|must'
+        | grep --line-buffered -E 'input|window|dry run|non-finite|must'
   fi
   tick "step7_$p"
 done

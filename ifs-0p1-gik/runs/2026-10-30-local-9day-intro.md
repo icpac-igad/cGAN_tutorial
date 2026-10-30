@@ -59,10 +59,16 @@ just before the generator. The weights were located during the run:
 ## Notes
 
 - **AWS throttling.** Most messages came from the GCS copy: the reader falls
-  back to it on any S3 error, and S3 answered 503 Slow Down for most GETs on
-  this day. step4's time is mostly network time (mean GET ~1.1–1.3 s, decode
+  back to it on any S3 error, and S3 answered 503 Slow Down for most GETs
+  throughout the run. step4's time is mostly network time (mean GET ~1.1–1.3 s, decode
   ~35 ms), so it varies with ECMWF's buckets more than with this machine.
 - **step1 for every cycle.** The public virtual store on source.coop already
   holds 20261021–26; it was rebuilt locally for every cycle so that each day
   is timed the same way, as a daily job would have to build it.
+- **On disk after the 9 cycles:** realized stores 26 GB (~2.65 GB per cycle),
+  local virtual store 151 MB, the 18 SEWAA NetCDFs 2.8 GB (6 h ~45 MB, 7 d
+  ~280 MB per cycle).
+- **Log buffering.** During this run `run_local.sh` piped each step through
+  `grep` without `--line-buffered`, so step4's progress lines reached the log
+  only when the step ended. The times are not affected. Fixed after the run.
 - The per-stage seconds are also in [`2026-10-30-local-9day-timing.tsv`](2026-10-30-local-9day-timing.tsv).

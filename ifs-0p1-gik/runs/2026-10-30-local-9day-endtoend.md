@@ -1,4 +1,4 @@
-# Local end-to-end run, 9 daily cycles 20261021–29 00z, no cluster (in progress: 3 of 9 done)
+# Local end-to-end run, 9 daily cycles 20261021–29 00z, no cluster
 
 ## Summary, seconds per stage
 
@@ -7,8 +7,14 @@
 | 20261021 00z | 49 | 747 | 19 | 37 | 2 | 2 | **856** (14.3 min) | 28.7 | 29.39 | PASS |
 | 20261022 00z | 48 | 637 | 21 | 37 | 1 | 3 | **747** (12.4 min) | 33.7 | 29.34 | PASS |
 | 20261023 00z | 48 | 568 | 20 | 39 | 2 | 3 | **680** (11.3 min) | 37.7 | 29.34 | PASS |
+| 20261024 00z | 48 | 593 | 21 | 39 | 2 | 3 | **706** (11.8 min) | 36.2 | 29.14 | PASS |
+| 20261025 00z | 47 | 551 | 20 | 39 | 3 | 2 | **662** (11.0 min) | 39.0 | 29.53 | PASS |
+| 20261026 00z | 47 | 561 | 20 | 41 | 2 | 3 | **674** (11.2 min) | 38.2 | 29.74 | PASS |
+| 20261027 00z | 48 | 563 | 21 | 48 | 3 | 5 | **688** (11.5 min) | 38.1 | 29.90 | PASS |
+| 20261028 00z | 49 | 558 | 21 | 44 | 1 | 7 | **680** (11.3 min) | 38.4 | 30.10 | PASS |
+| 20261029 00z | 49 | 576 | 21 | 47 | 2 | 8 | **703** (11.7 min) | 37.3 | 30.17 | PASS |
 
-3 cycles: total mean **12.7 min**, min 11.3, max 14.3; all 0.63 h.
+9 cycles: total mean **11.8 min**, min 11.0, max 14.3; all 1.78 h.
 
 ## About this run
 
@@ -71,12 +77,18 @@ just before the generator. The weights were located during the run:
 ## Notes
 
 - **AWS throttling.** Most messages came from the GCS copy: the reader falls
-  back to it on any S3 error, and S3 answered 503 Slow Down for most GETs on
-  this day. step4's time is mostly network time (mean GET ~1.1–1.3 s, decode
+  back to it on any S3 error, and S3 answered 503 Slow Down for most GETs
+  throughout the run. step4's time is mostly network time (mean GET ~1.1–1.3 s, decode
   ~35 ms), so it varies with ECMWF's buckets more than with this machine.
 - **step1 for every cycle.** The public virtual store on source.coop already
   holds 20261021–26; it was rebuilt locally for every cycle so that each day
   is timed the same way, as a daily job would have to build it.
+- **On disk after the 9 cycles:** realized stores 26 GB (~2.65 GB per cycle),
+  local virtual store 151 MB, the 18 SEWAA NetCDFs 2.8 GB (6 h ~45 MB, 7 d
+  ~280 MB per cycle).
+- **Log buffering.** During this run `run_local.sh` piped each step through
+  `grep` without `--line-buffered`, so step4's progress lines reached the log
+  only when the step ended. The times are not affected. Fixed after the run.
 - The per-stage seconds are also in [`2026-10-30-local-9day-timing.tsv`](2026-10-30-local-9day-timing.tsv).
 
 ## 20261021 00z
@@ -120,5 +132,79 @@ Run 2026-10-30T08:55:11Z → 2026-10-30T09:06:31Z, **680 s (11.3 min)**.
 
 ## 20261024 00z
 
-Not finished when this report was written.
+Run 2026-10-30T09:06:31Z → 2026-10-30T09:18:17Z, **706 s (11.8 min)**.
+
+| Stage | s | What happened |
+|---|---:|---|
+| step1_build_virtual.py | 48 | 742478 refs from 340 .index files on GCS in 24.4s; virtual snapshot `7EAG61CTGY26NRN2H5DG`; read-back 8/8 chunks equal a direct decode |
+| step4_realize.py `--no-cluster --threads 12` | 593 | 14 fields x 30 steps = 420 blocks x 51 members = 21,420 messages; 36.2 msg/s; fetched 29.14 of 43.16 GB whole-message bytes (saved 32.5%); 21,405 GETs (5 top-ups), 18,956 of the first 21,400 messages (counter saved every 200) read from the GCS copy after AWS 503 Slow Down; store `Z5EDGE36TDNT8RNXHASG`, 2.67 GB on disk |
+| step5_check.py `--samples 8` | 21 | yes -- 420/420 chunks written; 8/8 bit-exact vs whole messages through the virtual store; **PASS** |
+| step6_sewaa_netcdf.py | 39 | `cgan-ifs-6h-ens/IFS_20261024_00Z.nc` 46 MB, `cgan-ifs-7d-ens/IFS_20261024_00Z.nc` 281 MB (51 members, sd ddof 0) |
+| step7_infer.py jurre-6h `--dry-run` | 2 | dry run  OK: 4 windows of finite 1x384x352x56 input in 1s |
+| step7_infer.py mvua-7d `--dry-run` | 3 | dry run  OK: 7 windows of finite 1x384x352x28 input in 2s |
+
+## 20261025 00z
+
+Run 2026-10-30T09:18:17Z → 2026-10-30T09:29:19Z, **662 s (11.0 min)**.
+
+| Stage | s | What happened |
+|---|---:|---|
+| step1_build_virtual.py | 47 | 742478 refs from 340 .index files on GCS in 25.1s; virtual snapshot `BWTVR9MSQMS84AC8DSRG`; read-back 8/8 chunks equal a direct decode |
+| step4_realize.py `--no-cluster --threads 12` | 551 | 14 fields x 30 steps = 420 blocks x 51 members = 21,420 messages; 39.0 msg/s; fetched 29.53 of 43.52 GB whole-message bytes (saved 32.2%); 21,400 GETs (0 top-ups), 18,467 of the first 21,400 messages (counter saved every 200) read from the GCS copy after AWS 503 Slow Down; store `W5VRCDXZJQSFVDWTV3XG`, 2.68 GB on disk |
+| step5_check.py `--samples 8` | 20 | yes -- 420/420 chunks written; 8/8 bit-exact vs whole messages through the virtual store; **PASS** |
+| step6_sewaa_netcdf.py | 39 | `cgan-ifs-6h-ens/IFS_20261025_00Z.nc` 46 MB, `cgan-ifs-7d-ens/IFS_20261025_00Z.nc` 279 MB (51 members, sd ddof 0) |
+| step7_infer.py jurre-6h `--dry-run` | 3 | dry run  OK: 4 windows of finite 1x384x352x56 input in 1s |
+| step7_infer.py mvua-7d `--dry-run` | 2 | dry run  OK: 7 windows of finite 1x384x352x28 input in 2s |
+
+## 20261026 00z
+
+Run 2026-10-30T09:29:20Z → 2026-10-30T09:40:34Z, **674 s (11.2 min)**.
+
+| Stage | s | What happened |
+|---|---:|---|
+| step1_build_virtual.py | 47 | 742478 refs from 340 .index files on GCS in 24.5s; virtual snapshot `WVTNHK12G3VA56F4ME60`; read-back 8/8 chunks equal a direct decode |
+| step4_realize.py `--no-cluster --threads 12` | 561 | 14 fields x 30 steps = 420 blocks x 51 members = 21,420 messages; 38.2 msg/s; fetched 29.74 of 43.73 GB whole-message bytes (saved 32.0%); 21,404 GETs (4 top-ups), 19,012 of the first 21,400 messages (counter saved every 200) read from the GCS copy after AWS 503 Slow Down; store `VEN1ADC2CFD6G8SJB4Y0`, 5.36 GB on disk |
+| step5_check.py `--samples 8` | 20 | yes -- 420/420 chunks written; 8/8 bit-exact vs whole messages through the virtual store; **PASS** |
+| step6_sewaa_netcdf.py | 41 | `cgan-ifs-6h-ens/IFS_20261026_00Z.nc` 45 MB, `cgan-ifs-7d-ens/IFS_20261026_00Z.nc` 278 MB (51 members, sd ddof 0) |
+| step7_infer.py jurre-6h `--dry-run` | 2 | dry run  OK: 4 windows of finite 1x384x352x56 input in 1s |
+| step7_infer.py mvua-7d `--dry-run` | 3 | dry run  OK: 7 windows of finite 1x384x352x28 input in 2s |
+
+## 20261027 00z
+
+Run 2026-10-30T09:40:34Z → 2026-10-30T09:52:02Z, **688 s (11.5 min)**.
+
+| Stage | s | What happened |
+|---|---:|---|
+| step1_build_virtual.py | 48 | 742478 refs from 340 .index files on GCS in 25.5s; virtual snapshot `6BTWSG8Q6Y9VB1TNMP4G`; read-back 8/8 chunks equal a direct decode |
+| step4_realize.py `--no-cluster --threads 12` | 563 | 14 fields x 30 steps = 420 blocks x 51 members = 21,420 messages; 38.1 msg/s; fetched 29.90 of 43.92 GB whole-message bytes (saved 31.9%); 21,400 GETs (0 top-ups), 18,491 of the first 21,400 messages (counter saved every 200) read from the GCS copy after AWS 503 Slow Down; store `514HKBVS8ATA6VEFHMYG`, 2.66 GB on disk |
+| step5_check.py `--samples 8` | 21 | yes -- 420/420 chunks written; 8/8 bit-exact vs whole messages through the virtual store; **PASS** |
+| step6_sewaa_netcdf.py | 48 | `cgan-ifs-6h-ens/IFS_20261027_00Z.nc` 45 MB, `cgan-ifs-7d-ens/IFS_20261027_00Z.nc` 276 MB (51 members, sd ddof 0) |
+| step7_infer.py jurre-6h `--dry-run` | 3 | dry run  OK: 4 windows of finite 1x384x352x56 input in 2s |
+| step7_infer.py mvua-7d `--dry-run` | 5 | dry run  OK: 7 windows of finite 1x384x352x28 input in 5s |
+
+## 20261028 00z
+
+Run 2026-10-30T09:52:02Z → 2026-10-30T10:03:22Z, **680 s (11.3 min)**.
+
+| Stage | s | What happened |
+|---|---:|---|
+| step1_build_virtual.py | 49 | 742478 refs from 340 .index files on GCS in 24.3s; virtual snapshot `46Q5NME53X3ZRHYYF990`; read-back 8/8 chunks equal a direct decode |
+| step4_realize.py `--no-cluster --threads 12` | 558 | 14 fields x 30 steps = 420 blocks x 51 members = 21,420 messages; 38.4 msg/s; fetched 30.10 of 44.13 GB whole-message bytes (saved 31.8%); 21,400 GETs (0 top-ups), 18,165 of the first 21,400 messages (counter saved every 200) read from the GCS copy after AWS 503 Slow Down; store `K3MMDMQ8PD4RXN7WVK1G`, 2.63 GB on disk |
+| step5_check.py `--samples 8` | 21 | yes -- 420/420 chunks written; 8/8 bit-exact vs whole messages through the virtual store; **PASS** |
+| step6_sewaa_netcdf.py | 44 | `cgan-ifs-6h-ens/IFS_20261028_00Z.nc` 45 MB, `cgan-ifs-7d-ens/IFS_20261028_00Z.nc` 274 MB (51 members, sd ddof 0) |
+| step7_infer.py jurre-6h `--dry-run` | 1 | dry run  OK: 4 windows of finite 1x384x352x56 input in 1s |
+| step7_infer.py mvua-7d `--dry-run` | 7 | dry run  OK: 7 windows of finite 1x384x352x28 input in 6s |
+
+## 20261029 00z
+
+Run 2026-10-30T10:03:22Z → 2026-10-30T10:15:05Z, **703 s (11.7 min)**.
+
+| Stage | s | What happened |
+|---|---:|---|
+| step1_build_virtual.py | 49 | 742478 refs from 340 .index files on GCS in 24.6s; virtual snapshot `8MBMQ9AJJA7FSFN46Q50`; read-back 8/8 chunks equal a direct decode |
+| step4_realize.py `--no-cluster --threads 12` | 576 | 14 fields x 30 steps = 420 blocks x 51 members = 21,420 messages; 37.3 msg/s; fetched 30.17 of 44.35 GB whole-message bytes (saved 32.0%); 21,412 GETs (12 top-ups), 18,000 of the first 21,400 messages (counter saved every 200) read from the GCS copy after AWS 503 Slow Down; store `5N708BM66SPWMMV9HSEG`, 2.60 GB on disk |
+| step5_check.py `--samples 8` | 21 | yes -- 420/420 chunks written; 8/8 bit-exact vs whole messages through the virtual store; **PASS** |
+| step6_sewaa_netcdf.py | 47 | `cgan-ifs-6h-ens/IFS_20261029_00Z.nc` 45 MB, `cgan-ifs-7d-ens/IFS_20261029_00Z.nc` 273 MB (51 members, sd ddof 0) |
+| step7_infer.py jurre-6h `--dry-run` | 2 | dry run  OK: 4 windows of finite 1x384x352x56 input in 1s |
+| step7_infer.py mvua-7d `--dry-run` | 8 | dry run  OK: 7 windows of finite 1x384x352x28 input in 7s |
 
