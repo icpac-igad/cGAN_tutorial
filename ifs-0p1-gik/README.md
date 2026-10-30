@@ -15,7 +15,7 @@ The workflow runs in two modes:
 
 | Mode | Where it runs | What it uses |
 |---|---|---|
-| **local** (`run_local.sh`) | One machine | Reads the **public virtual store** anonymously, realizes only the lead times the SEWAA products need into a local directory, and writes the SEWAA NetCDFs (`step6_sewaa_netcdf.py`). It then runs both operational models (`step7_infer.py`). **Nothing is built or uploaded: no source.coop writes, no Ceph, no EWC workers.** |
+| **local** (`run_local.sh`) | One machine, no cluster | Reads the **public virtual store** anonymously, or builds it locally with `BUILD_VD=1`. It realizes only the lead times the SEWAA products need into a local directory: step 4 runs on threads in one process. It writes the SEWAA NetCDFs (`step6_sewaa_netcdf.py`), then runs both operational models (`step7_infer.py`). **Nothing is uploaded: no source.coop writes, no Ceph, no EWC workers, no Dask/Frisky cluster.** About 12 min per cycle (§0). |
 | **ewc** (`run_ewc.sh`) | EWC Frisky workers | Writes to Ceph, publishes to source.coop, builds the full per-member NetCDF from the public copy, runs the inference. This is the daily driver of the public stores. |
 
 **The SEWAA products (§11)** are the two models the SEWAA package runs operationally: Jurre-Brishti (6 h) and Mvua-Kubwa (7 × 24 h). Their method, input layout and code come from `icpac-igad/sewaa-forecasts-package`, `icpac-igad/fast-cgan` and `jaysnm/ensemble-cgan`, at the commits listed in **`vendor/PROVENANCE.md`**. Here they are made self-contained: the IFS NetCDF that production pulls by SFTP is built from the ECMWF open data, and the generator code is vendored.
@@ -31,6 +31,31 @@ It has been cut down to this one box and these 14 fields; §12 lists what came f
 ---
 
 ## 0. Measured
+
+### 2026-10-30, daily end-to-end, local mode with no cluster, nine cycles 20261021–29 00z
+
+Full report: **[`runs/2026-10-30-local-9day-endtoend.md`](runs/2026-10-30-local-9day-endtoend.md)**. It gives one section per date, plus the commands, code commit, environment and weights. Per-stage seconds are in [`runs/2026-10-30-local-9day-timing.tsv`](runs/2026-10-30-local-9day-timing.tsv).
+
+**What was run.** `run_local.sh <date>` once per cycle, in sequence, as a daily job would run, with `BUILD_VD=1 PRODUCTS="jurre-6h mvua-7d"`:
+- one 8-vCPU machine;
+- step 4 with **no cluster** (`--no-cluster --threads 12`);
+- the virtual store built locally for each cycle;
+- step 7 as `--dry-run` (no weights loaded), so the times stop just before the generator.
+
+The code is at `57ee2cc`.
+
+| Stage | Mean per cycle | Range |
+|---|---|---|
+| step 1, local virtual store (340 `.index` files, 742k refs) | 48 s | 47–49 s |
+| step 4, realize 21,420 messages (~29.5 of ~43.6 GB fetched) | 595 s | 551–747 s |
+| step 5, check (8/8 bit-exact) | 20 s | 19–21 s |
+| step 6, both SEWAA NetCDFs (~45 MB + ~280 MB) | 41 s | 37–48 s |
+| step 7, both products, input check only | 6 s | 4–10 s |
+| **total** | **11.8 min** | **11.0–14.3 min**; 1.78 h for all nine |
+
+- **Every cycle passed step 5.**
+- **The download dominates.** Step 4 is ~82% of each cycle and is network time: mean GET 1.1–1.3 s against ~35 ms decode. S3 answered 503 Slow Down for most GETs, so ~85–90% of messages came from the byte-identical GCS copy.
+- **On disk:** 26 GB of realized stores, 151 MB of virtual store and 2.8 GB of NetCDFs for the nine cycles.
 
 ### 2026-10-29, SEWAA products, local mode on one 8-core machine, cycle 20261026T00z
 
@@ -233,11 +258,12 @@ $D step3_deploy_workers.py --stop          # this workflow's workers and schedul
 ### Step 4: realize (`step4_realize.py`)
 
 ```bash
-# local
+# local, no cluster: 12 block tasks on threads in this process (run_local.sh's default)
 .venv/bin/python step4_realize.py --date 20261021 \
     --vd local:$HOME/icechunk-local/ecmwf-ifs-0p1-icechunk-vd \
     --sink local:$HOME/icechunk-local/ecmwf-ifs-0p1-cgan14-19e55e-25n15s/20261021T00z \
-    --workers 2 --threads 4
+    --no-cluster --threads 12
+# local Frisky cluster instead: --workers 2 --threads 4
 # EWC
 .venv/bin/python step4_realize.py --date 20261021 --sink ceph:cgan14-19e55e-25n15s/20261021T00z \
     --env $CEPH_ENV --scheduler 192.168.1.164:8798
@@ -265,6 +291,8 @@ What it does:
 - **Exactness.** Bit-exact, re-checked on every run by step 5 (and 736/736 against eccodes and gribberish in `grib-index-kerchunk/ecmwf/0p1/wide-box/README.md` §1).
 
 `--full-read` reads whole messages through the virtual store and gribberish instead: slower, but with no libaec step.
+
+**`--no-cluster`** runs the same `read_write_block` tasks on `--threads` threads inside the step 4 process, with no Frisky. Each task gets a pickled copy of the fork, as a worker would, so the merge and the commit are unchanged. The GETs and the libaec decode release the GIL. On 20261026 `jurre-6h`, in the same hour, it took 126 s with 12 threads against 143 s on the 2 × 4 local cluster. The executor is recorded in `realize_summary`.
 
 **Why one task per block, not one per message.** With separate read tasks, every member's box lands on whichever worker read it, and the writer then pulls all of them across the LAN. On the wide box that limited the run to 2.6–5.7 msg/s instead of 16 msg/s (`grib-index-kerchunk/ecmwf/0p1/wide-box/README.md` §4).
 
@@ -338,6 +366,8 @@ JURRE_MODEL_FOLDER=/path/jurre-brishti/model-weights JURRE_CONSTANTS=/path/jurre
   MVUA_MODEL_FOLDER=/path/mvua-kubwa/model-weights MVUA_CONSTANTS=/path/mvua-kubwa/constants \
   bash run_local.sh 20261026                                  # with the trained models
 BUILD_VD=1 bash run_local.sh 20261026     # build the cycle's virtual store locally (step 1) instead
+# several days, timed per stage into $TIMING (default logs/timing_local.tsv), report as in runs/
+for d in 21 22 23; do BUILD_VD=1 bash run_local.sh 202610$d; done
 
 # EWC + Ceph + source.coop: the daily run
 APPEND_VD=1 CEPH_ENV=~/.../.env SC_ENV=~/.../.env.sourcecoop \
@@ -348,6 +378,14 @@ CEPH_ENV=... SC_ENV=... bash run_ewc.sh 2026102018 2026102100 2026102200
 # cycles already realized and published: NetCDF + inference only
 SKIP_REALIZE=1 SC_ENV=... bash run_ewc.sh 20261021
 ```
+
+`run_local.sh` env switches:
+- `THREADS`: step 4 block threads, default 12;
+- `CLUSTER=1`: use a Frisky local cluster, `WORKERS` × `THREADS`;
+- `TIMING`: the per-stage seconds file;
+- `MEMBERS`, `NC_MEMBERS`, `DDOF`;
+- `*_MODEL_FOLDER`, `*_CHECKPOINT`, `*_CONSTANTS`;
+- `GAN_MEMBERS`, `UNTRAINED`.
 
 `run_ewc.sh` env switches: `UPLOAD_GAN=1` uploads the inference output (off by default), `KEEP_NC=1` keeps the IFS NetCDF (deleted after step 7 by default), `CONSTANTS` (default `../tensorflow-dev-test/cgan_compact_20260202/CONSTANTS`), `NC_MEMBERS`, `GAN_MEMBERS`.
 
@@ -398,7 +436,12 @@ The IFS NetCDF is an intermediate: it is rebuilt from the realized store in ~5 m
 
 ## 8. Caveats
 
-- **The trained IFS generator weights are not on this machine.** These are the 6 h model (`ICPAC-big-ensmeansd`, checkpoint 316800) and the 24 h model (checkpoint 300800), each with its `setup_params.yaml` and constants. They are on the SEWAA notebook server (`gefs-gik-data-prepration/cgan_ecmwf/ECMWF_cGAN_INFERENCE_WORKFLOW.md`) and in every SEWAA deployment's `data/models-config/{jurre-brishti,mvua-kubwa}`. The public tarballs named in `sewaa-forecasts-package/manager.sh` returned 404 on 2026-10-29. Only a GEFS model is in `tensorflow-dev-test/cgan_compact_20260202`. Until the folders are copied here, step 7 runs as `--dry-run`, or with `--untrained` for a test.
+- **Trained weights.** None are in this repo; only a GEFS model is in `tensorflow-dev-test/cgan_compact_20260202`. The SEWAA Docker images carry none either: they mount `data/models-config/` at run time, and their two `ensemble-cgan` code layers are 0.3–0.4 MB. The public tarballs named in `sewaa-forecasts-package/manager.sh` returned 404 on 2026-10-29 and 2026-10-30. Checked 2026-10-30 against [`Fenwick-Cooper/SEWAA-forecasts`](https://github.com/Fenwick-Cooper/SEWAA-forecasts) @ `2fe8a40`:
+  - **6 h, available.** `6h_accumulations/cGAN/ICPAC-big-ensmeansd/models/gen_weights-0316800.h5` is the operational checkpoint 316800. It has the same folder name as the Jurre_brishti branch's `forecast.yaml`, the same 14 fields and the same input. It loads into `vendor/ensemble_cgan` with 56 channels. Its `FCSTNorm2018.pkl`, `elev.nc` and `lsm.nc` have the same md5 as `../tensorflow-dev-test/cgan_compact_20260202/CONSTANTS`. Use `JURRE_MODEL_FOLDER=~/SEWAA-forecasts/6h_accumulations/cGAN/ICPAC-big-ensmeansd`.
+  - **7 days, not available.** The operational Mvua-Kubwa checkpoint 300800 (14 fields, 28 channels) is in none of these places, only in a SEWAA deployment's `data/models-config/mvua-kubwa`.
+  - **Not a substitute for the 7-day model.** SEWAA-forecasts' 24 h models are newer and per lead day: `logs_1` @ 203776 (day 0), `logs_5` @ 163840 (day 1) and `logs_17` @ 115200 (days 2–6). They have **13 fields (no `cape`), 26 channels** and their own `FCSTNorm2018.pkl`. They load only with 26 channels, so they would need their own step 7 mode. The `cgan-ifs-7d-ens` file already holds everything they read.
+
+  Without weights, step 7 runs as `--dry-run`, or with `--untrained` for a test.
 - **`scripts/ensemble-forecast.py`** had two typos (`sys.path.insert("../data/")` without its index, `fron config import`), now fixed. It still imports `data_old`, which is not in this repo; `step7_infer.py` is the runnable equivalent.
 - **Normalisation.** `FCSTNorm*.pkl` must come from the same field set and grid as the model.
 - **`cape` is `mucape`.** It is the same channel as the model's `cape` from 2024-11-13; before that, ECMWF published `cape`.
@@ -430,6 +473,7 @@ The IFS NetCDF is an intermediate: it is rebuilt from the realized store in ~5 m
 | `run_local.sh`, `run_ewc.sh` | End-to-end drivers (`run_ewc.sh` takes several cycles) |
 | `upload_files.py` | Copy finished files (the inference output) to source.coop or Ceph |
 | `logs/` | Logs of the runs measured in §0 |
+| `runs/` | Run reports. `make_local_run_report.py` turns a `run_local.sh` log and timing TSV into a Markdown report with one section per cycle. `2026-10-30-local-9day-*` is the nine-day run in §0 |
 
 ## 10. Provenance
 
@@ -472,7 +516,7 @@ All of the following come from `grib-index-kerchunk` at `1d12c38` (branch `ecmwf
 **The flow in `run_local.sh`.** No step needs credentials or writes anywhere but this machine:
 
 1. **Virtual store.** It reads the public one (`sourcecoop:forecasts/ecmwf-ifs-0p1-icechunk-vd`) anonymously; nothing is built or uploaded. The public store only has the cycles the EWC daily run appended. For any other cycle, `BUILD_VD=1` builds it locally with step 1, which is also only reads from ECMWF.
-2. **Step 4** `--product …` realizes only the needed lead times, all 51 members, on a local Frisky cluster, into `$IFS0P1_LOCAL_ROOT/ecmwf-ifs-0p1-cgan14-<box>/<YYYYMMDD>T<HH>z-<products>`.
+2. **Step 4** `--product …` realizes only the needed lead times, all 51 members, with no cluster (`--no-cluster`, 12 threads; `CLUSTER=1` for a local Frisky cluster), into `$IFS0P1_LOCAL_ROOT/ecmwf-ifs-0p1-cgan14-<box>/<YYYYMMDD>T<HH>z-<products>`.
 3. **Step 5** checks it: complete, bit-exact against whole messages, and sane.
 4. **`step6_sewaa_netcdf.py`** writes `$OUTDIR/cgan-ifs-6h-ens/IFS_<YYYYMMDD>_<HH>Z.nc` and `$OUTDIR/cgan-ifs-7d-ens/…`, under the folder names the SEWAA jobs read. A SEWAA deployment, or the IFS server's `Operational*` directories, can take these files as they are.
 5. **`step7_infer.py`** runs each product's computation with the vendored production generator. It falls back to `--dry-run` when that model's folder is not set.
